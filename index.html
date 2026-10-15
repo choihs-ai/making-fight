@@ -1,0 +1,2418 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>파이트 메이커</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="파이트메이커">
+<meta name="theme-color" content="#16132e">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Black+Han+Sans&family=IBM+Plex+Sans+KR:wght@400;600;700&display=swap">
+<style>
+/* Layout: one-screen arcade app. Menus are a centered column over an arena backdrop;
+   the fight is a 16:9 canvas with thumb pads under it (portrait) or over its corners (landscape). */
+:root{
+  --night:#16132e;
+  --night-2:#1f1a42;
+  --panel:#2a2357;
+  --line:#463d82;
+  --dot:#3b3374;
+  --text:#f6f2ff;
+  --dim:#b0a8de;
+  --gold:#ffc83a;
+  --gold-deep:#b9791a;
+  --gold-ink:#2a1d00;
+  --p1:#ff5a6e;
+  --p2:#4bb9ff;
+  --glow-a:#2d2470;
+  --glow-b:#47184e;
+  --scrim:rgba(13,10,32,.8);
+  --font-display:"Black Han Sans","Apple SD Gothic Neo","Malgun Gothic","Noto Sans KR",sans-serif;
+  --font-body:"IBM Plex Sans KR",-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Malgun Gothic","Noto Sans KR",sans-serif;
+  color-scheme:dark;
+}
+html{box-sizing:border-box;height:100%;-webkit-text-size-adjust:100%}
+*,*::before,*::after{box-sizing:inherit}
+:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+[hidden]{display:none!important}
+body{margin:0;height:100%;overflow:hidden;background:var(--night);color:var(--text);font:15px/1.55 var(--font-body);word-break:keep-all;overflow-wrap:break-word;
+  -webkit-user-select:none;user-select:none;-webkit-tap-highlight-color:transparent;touch-action:manipulation}
+#app{position:relative;height:100%;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));
+  background:radial-gradient(120% 80% at 8% -10%,var(--glow-a),transparent 60%),radial-gradient(90% 70% at 105% 110%,var(--glow-b),transparent 60%),var(--night)}
+button{font-family:inherit;color:inherit}
+:focus-visible{outline:3px solid var(--gold);outline-offset:2px}
+
+.screen{height:100%;overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;padding-block:18px 32px}
+.wrap{max-width:1000px;margin:0 auto;display:flex;flex-direction:column;gap:20px}
+.wrap.narrow{max-width:720px}
+.dim{color:var(--dim)}
+.center{text-align:center}
+
+/* ---------- title ---------- */
+.title{min-height:100%;display:grid;place-items:center}
+.title-inner{width:100%;max-width:940px;display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:32px;align-items:center}
+@media (max-width:760px){.title-inner{grid-template-columns:minmax(0,1fr);gap:22px}}
+.logo{margin:0;font-family:var(--font-display);font-weight:400;font-size:clamp(54px,12vw,108px);line-height:.92;transform:skewX(-9deg);transform-origin:left bottom}
+.logo .a{display:block;color:var(--gold);text-shadow:0 6px 0 var(--gold-deep)}
+.logo .b{display:block;color:transparent;-webkit-text-stroke:2px var(--text);letter-spacing:.01em}
+.tag{margin:16px 0 0;color:var(--dim);max-width:32ch;text-wrap:balance}
+.menu{display:flex;flex-direction:column;gap:12px;margin-top:24px}
+.mbtn{appearance:none;border:0;cursor:pointer;min-height:60px;padding:12px 26px;display:flex;justify-content:space-between;align-items:center;gap:12px;
+  font-family:var(--font-display);font-size:25px;font-weight:400;text-align:left;background:var(--panel);color:var(--text);
+  clip-path:polygon(16px 0,100% 0,calc(100% - 16px) 100%,0 100%);transition:transform .12s ease,filter .12s ease}
+.mbtn small{font:600 13px var(--font-body);color:var(--dim)}
+.mbtn.gold{background:var(--gold);color:var(--gold-ink)}
+.mbtn.gold small{color:var(--gold-ink);opacity:.72}
+.mbtn:hover{filter:brightness(1.1);transform:translateX(4px)}
+.mbtn:active{transform:translateX(2px) translateY(1px)}
+.mbtn:focus-visible{outline:none;box-shadow:inset 0 0 0 3px var(--text)}
+.title-foot{display:flex;gap:10px;align-items:center;margin-top:18px;color:var(--dim);font-size:14px}
+.link{appearance:none;background:none;border:0;padding:10px 4px;min-height:44px;color:var(--dim);font:600 14px var(--font-body);cursor:pointer;text-decoration:underline;text-underline-offset:3px}
+.hero{margin:0;position:relative;border-radius:22px;overflow:hidden;border:1px solid var(--line);background:linear-gradient(180deg,var(--night-2),var(--panel))}
+.hero::before{content:"";position:absolute;inset:0;background-image:radial-gradient(var(--dot) 1.3px,transparent 1.8px);background-size:12px 12px;
+  -webkit-mask-image:linear-gradient(180deg,#000,transparent 80%);mask-image:linear-gradient(180deg,#000,transparent 80%)}
+.hero canvas{position:relative;display:block;width:100%;height:clamp(230px,44vh,420px)}
+.hero figcaption{position:relative;display:flex;justify-content:space-between;align-items:center;gap:10px;padding:12px 16px;border-top:1px solid var(--line);background:var(--night-2)}
+.hero figcaption b{font-family:var(--font-display);font-weight:400;font-size:24px;line-height:1.1}
+.hero figcaption span{color:var(--dim);font-size:14px;font-weight:600}
+
+/* ---------- common bits ---------- */
+.bar{display:flex;align-items:center;gap:12px}
+.bar h2{margin:0;font-family:var(--font-display);font-weight:400;font-size:30px;transform:skewX(-7deg);text-wrap:balance}
+.back{appearance:none;border:1.5px solid var(--line);background:transparent;min-height:44px;padding:0 14px;border-radius:12px;font:600 15px var(--font-body);cursor:pointer;flex:none}
+.sec{display:flex;flex-direction:column;gap:10px;min-width:0}
+.sec-stack{display:flex;flex-direction:column;gap:20px}
+.label{font-size:12px;font-weight:700;letter-spacing:.14em;color:var(--dim)}
+.label b{color:var(--gold);font-weight:700}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chip{appearance:none;cursor:pointer;min-height:44px;padding:8px 16px;border-radius:999px;border:1.5px solid var(--line);background:var(--night-2);font:600 14px var(--font-body)}
+.chip[aria-pressed="true"]{background:var(--gold);border-color:var(--gold);color:var(--gold-ink)}
+.swatches{display:flex;flex-wrap:wrap;gap:4px}
+.sw{appearance:none;cursor:pointer;width:44px;height:44px;border-radius:50%;padding:5px;border:3px solid transparent;background-clip:content-box!important}
+.sw[aria-pressed="true"]{border-color:var(--gold)}
+.btn{appearance:none;cursor:pointer;min-height:48px;padding:0 20px;border-radius:12px;border:1.5px solid var(--line);background:var(--night-2);font:700 16px var(--font-body);display:inline-flex;align-items:center;justify-content:center;gap:8px}
+.btn.gold{background:var(--gold);border-color:var(--gold);color:var(--gold-ink)}
+.btn.ghost{background:transparent}
+.btn.big{min-height:58px;font:400 22px var(--font-display);letter-spacing:.02em}
+.btn:disabled{opacity:.4;cursor:default}
+.btn:not(:disabled):active{transform:translateY(1px)}
+
+.roster{display:flex;gap:10px;overflow-x:auto;padding:2px 2px 8px;scroll-snap-type:x proximity;min-width:0}
+.card{flex:none;width:112px;appearance:none;cursor:pointer;border:2px solid var(--line);background:var(--night-2);border-radius:16px;padding:8px 8px 10px;display:flex;flex-direction:column;align-items:center;gap:2px;scroll-snap-align:start}
+.card img,.card .ph{width:84px;height:84px;display:block}
+.card b{font-family:var(--font-display);font-weight:400;font-size:16px;line-height:1.2;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.card span{font-size:12px;color:var(--dim);font-weight:600}
+.card[aria-pressed="true"]{border-color:var(--gold);background:var(--panel)}
+.card.new{border-style:dashed;justify-content:center;color:var(--dim)}
+.card .ph{display:grid;place-items:center;font:400 40px var(--font-display);color:var(--gold)}
+
+/* ---------- creator ---------- */
+.creator{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.15fr);gap:22px;align-items:start}
+@media (max-width:780px){.creator{grid-template-columns:minmax(0,1fr)}.preview canvas{height:170px}.derived{display:none}}
+.preview{position:sticky;top:-18px;z-index:1;border-radius:20px;border:1px solid var(--line);overflow:hidden;background:linear-gradient(180deg,var(--night-2),var(--panel))}
+.preview canvas{display:block;width:100%;height:clamp(210px,38vh,380px)}
+.demo-row{display:flex;gap:8px;padding:10px;border-top:1px solid var(--line);background:var(--night-2);flex-wrap:wrap}
+.demo-row .btn{flex:1;min-width:0;padding:0 10px}
+.derived{margin:0;padding:0 12px 12px;background:var(--night-2);font-size:13px;color:var(--dim);font-variant-numeric:tabular-nums}
+.editor{display:flex;flex-direction:column;gap:22px;min-width:0}
+.name-row{display:flex;gap:8px}
+.text-in{flex:1;min-width:0;font:600 18px var(--font-body);padding:10px 14px;min-height:50px;border-radius:12px;border:1.5px solid var(--line);background:var(--night-2);color:var(--text);-webkit-user-select:text;user-select:text}
+.style-desc{margin:0;color:var(--dim);font-size:14px}
+.style-desc b{color:var(--text)}
+.stat-row{display:grid;grid-template-columns:58px minmax(0,1fr) 44px 44px;align-items:center;gap:8px}
+.stat-row .nm{font-weight:700}
+.pips{display:flex;gap:5px}
+.pip{flex:1;height:14px;border-radius:3px;background:var(--line);transform:skewX(-16deg)}
+.pip.on{background:var(--gold)}
+.step{appearance:none;cursor:pointer;width:44px;height:44px;border-radius:12px;border:1.5px solid var(--line);background:var(--night-2);font:700 22px var(--font-body);line-height:1}
+.step:disabled{opacity:.3;cursor:default}
+.actions{display:flex;gap:10px;flex-wrap:wrap}
+.actions .btn{flex:1}
+
+/* ---------- online ---------- */
+.netkind{margin:0;font-size:14px;color:var(--dim);background:var(--night-2);border:1px solid var(--line);border-radius:14px;padding:12px 14px}
+.netkind b{color:var(--text)}
+.oa{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:14px}
+@media (max-width:620px){.oa{grid-template-columns:minmax(0,1fr)}}
+.oa-card{background:var(--night-2);border:1px solid var(--line);border-radius:18px;padding:16px;display:flex;flex-direction:column;gap:10px}
+.oa-card h3{margin:0;font-family:var(--font-display);font-weight:400;font-size:22px}
+.oa-card p{margin:0;color:var(--dim);font-size:14px}
+.join-row{display:flex;gap:8px}
+.code-in{flex:1;min-width:0;font:400 26px var(--font-display);letter-spacing:.3em;text-transform:uppercase;text-align:center;min-height:50px;border-radius:12px;border:1.5px solid var(--line);background:var(--night);color:var(--gold);-webkit-user-select:text;user-select:text}
+.code-box{display:flex;flex-direction:column;align-items:center;gap:12px;padding:22px 16px;background:var(--night-2);border:1px solid var(--line);border-radius:20px}
+.code{font-family:var(--font-display);font-size:clamp(60px,18vw,104px);letter-spacing:.14em;line-height:1;color:var(--gold);-webkit-user-select:text;user-select:text;padding-left:.14em}
+.waiting{display:flex;align-items:center;justify-content:center;gap:10px;color:var(--dim);font-weight:600}
+.pulse{width:10px;height:10px;border-radius:50%;background:var(--gold);animation:pulse 1.2s ease-in-out infinite}
+@keyframes pulse{50%{opacity:.25;transform:scale(.7)}}
+.vs{display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);align-items:center;gap:10px}
+.vs .mid{font-family:var(--font-display);font-size:42px;color:var(--gold);transform:skewX(-10deg)}
+.pcard{min-width:0;background:var(--night-2);border:2px solid var(--line);border-radius:18px;padding:12px 8px;display:flex;flex-direction:column;align-items:center;gap:2px;text-align:center}
+.pcard.p1{border-color:var(--p1)}
+.pcard.p2{border-color:var(--p2)}
+.pcard img{width:96px;height:96px}
+.pcard b{font-family:var(--font-display);font-weight:400;font-size:20px;line-height:1.2;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pcard span{font-size:13px;color:var(--dim)}
+.pcard .who{font-size:12px;font-weight:700;letter-spacing:.1em}
+.pcard.p1 .who{color:var(--p1)}
+.pcard.p2 .who{color:var(--p2)}
+.msg{margin:0;min-height:1.5em;color:var(--dim);font-weight:600}
+.msg.err{color:var(--p1)}
+
+/* ---------- fight ---------- */
+.fight{display:flex;flex-direction:column;gap:6px;padding-block:8px;overflow:hidden;position:relative}
+.stage-wrap{flex:1;min-height:0;display:flex;align-items:center;justify-content:center}
+.cv-box{position:relative}
+#cv-game{display:block;border-radius:8px;touch-action:none;background:var(--night-2)}
+.pause{position:absolute;top:15%;left:50%;transform:translateX(-50%);appearance:none;cursor:pointer;width:46px;height:34px;border-radius:10px;border:1.5px solid var(--line);background:var(--scrim);display:grid;place-items:center}
+.pause svg{width:14px;height:14px;fill:var(--text)}
+.rotate-hint,.keys-hint{margin:0;text-align:center;font-size:13px;color:var(--dim)}
+.rotate-hint{display:none}
+@media (orientation:portrait) and (pointer:coarse){.rotate-hint{display:block}}
+.keys-hint{display:none}
+@media (hover:hover) and (pointer:fine){.keys-hint{display:block}}
+.pads{--pb:64px;flex:none;display:flex;justify-content:space-between;align-items:flex-end;gap:12px;padding-bottom:4px;touch-action:none;-webkit-touch-callout:none}
+@media (hover:hover) and (pointer:fine){.pads{display:none}}
+@media (orientation:landscape) and (max-height:600px){
+  .pads{--pb:56px;position:absolute;left:max(16px,env(safe-area-inset-left,0px));right:max(16px,env(safe-area-inset-right,0px));bottom:6px;pointer-events:none}
+  .pad{pointer-events:auto}
+  .pb{opacity:.82}
+}
+.pad{display:grid;gap:8px}
+.pad-move{grid-template-columns:repeat(3,var(--pb));grid-template-rows:repeat(2,var(--pb))}
+.pad-act{grid-template-columns:repeat(2,var(--pb));grid-template-rows:repeat(2,var(--pb))}
+.pb{appearance:none;width:var(--pb);height:var(--pb);padding:0;border-radius:50%;border:2px solid var(--line);background:var(--panel);
+  font:400 16px var(--font-display);display:grid;place-items:center;touch-action:none;-webkit-user-select:none;user-select:none;cursor:pointer}
+.pb.on{background:var(--gold);border-color:var(--gold);color:var(--gold-ink)}
+.pb.u{grid-column:2;grid-row:1}.pb.l{grid-column:1;grid-row:2}.pb.g{grid-column:2;grid-row:2;font-size:15px}.pb.r{grid-column:3;grid-row:2}
+.pb.s{grid-column:2;grid-row:1;border-color:var(--gold)}.pb.p{grid-column:1;grid-row:2;border-color:var(--p1)}.pb.k{grid-column:2;grid-row:2;border-color:var(--p2)}
+.pb.s.ready{box-shadow:0 0 0 4px rgba(255,200,58,.35)}
+
+.overlay{position:absolute;inset:0;z-index:10;display:grid;place-items:center;background:var(--scrim);padding:16px}
+.ocard{width:100%;max-width:380px;background:var(--panel);border:1px solid var(--line);border-radius:20px;padding:22px;display:flex;flex-direction:column;gap:12px;text-align:center}
+.ocard h2{margin:0;font-family:var(--font-display);font-weight:400;font-size:34px;line-height:1.15;color:var(--gold);transform:skewX(-6deg);text-wrap:balance;overflow-wrap:anywhere}
+.ocard .kicker{margin:0;font-size:12px;font-weight:700;letter-spacing:.16em;color:var(--dim)}
+.ocard p{margin:0}
+.ocard .btn{width:100%}
+.help-list{margin:0;padding:0;list-style:none;display:flex;flex-direction:column;gap:8px;text-align:left;font-size:14px}
+.help-list li{display:grid;grid-template-columns:84px minmax(0,1fr);gap:10px}
+.help-list b{color:var(--gold);font-weight:700}
+.toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);z-index:20;background:var(--gold);color:var(--gold-ink);font-weight:700;padding:10px 18px;border-radius:999px;max-width:calc(100% - 32px)}
+@media (prefers-reduced-motion:reduce){.pulse{animation:none}.mbtn{transition:none}}
+</style>
+</head>
+<body>
+<div id="app">
+
+<section id="scr-title" class="screen">
+  <div class="title">
+    <div class="title-inner">
+      <div>
+        <h1 class="logo"><span class="a">파이트</span><span class="b">메이커</span></h1>
+        <p class="tag">격투가를 직접 만들고, CPU나 친구와 3판 2선승으로 겨뤄 보세요.</p>
+        <nav class="menu" aria-label="메인 메뉴">
+          <button class="mbtn gold" data-go="cpu">CPU 대전 <small>혼자 연습</small></button>
+          <button class="mbtn" data-go="online">온라인 대전 <small>방 코드로 친구와</small></button>
+          <button class="mbtn" data-go="creator">파이터 만들기 <small>외형 · 능력치 · 기술</small></button>
+        </nav>
+        <div class="title-foot">
+          <button class="link" id="btn-sound" type="button">소리 켜짐</button>
+          <span aria-hidden="true">·</span>
+          <button class="link" id="btn-help" type="button">조작법</button>
+        </div>
+      </div>
+      <figure class="hero">
+        <canvas id="cv-hero" aria-label="선택한 파이터 미리보기"></canvas>
+        <figcaption><b id="hero-name">-</b><span id="hero-style"></span></figcaption>
+      </figure>
+    </div>
+  </div>
+</section>
+
+<section id="scr-creator" class="screen" hidden>
+  <div class="wrap">
+    <header class="bar"><button class="back" data-back type="button">← 메뉴</button><h2>파이터 만들기</h2></header>
+    <div class="sec"><span class="label">내 파이터 목록</span><div class="roster" id="cr-roster"></div></div>
+    <div class="creator">
+      <div class="preview">
+        <canvas id="cv-preview" aria-label="파이터 미리보기"></canvas>
+        <div class="demo-row">
+          <button class="btn" type="button" data-demo="p">펀치</button>
+          <button class="btn" type="button" data-demo="k">킥</button>
+          <button class="btn" type="button" data-demo="s">필살기</button>
+        </div>
+        <p class="derived" id="cr-derived"></p>
+      </div>
+      <form class="editor" id="cr-form" autocomplete="off">
+        <div class="sec">
+          <label class="label" for="cr-name">이름 (최대 8자)</label>
+          <div class="name-row">
+            <input class="text-in" id="cr-name" type="text" maxlength="8" spellcheck="false">
+            <button class="btn" type="button" id="cr-random">랜덤 생성</button>
+          </div>
+        </div>
+        <div class="sec">
+          <span class="label">격투 스타일</span>
+          <div class="chips" id="cr-style"></div>
+          <p class="style-desc" id="cr-style-desc"></p>
+        </div>
+        <div class="sec">
+          <span class="label">능력치 · 남은 포인트 <b id="cr-left">0</b></span>
+          <div id="cr-stats" class="sec"></div>
+        </div>
+        <div class="sec"><span class="label">체형</span><div class="chips" id="cr-build"></div></div>
+        <div class="sec"><span class="label">머리 모양</span><div class="chips" id="cr-hair"></div></div>
+        <div class="sec"><span class="label">옷차림</span><div class="chips" id="cr-outfit"></div></div>
+        <div class="sec"><span class="label">피부색</span><div class="swatches" id="cr-skin"></div></div>
+        <div class="sec"><span class="label">옷 색</span><div class="swatches" id="cr-body"></div></div>
+        <div class="sec"><span class="label">포인트 색 (띠 · 장갑 · 머리띠)</span><div class="swatches" id="cr-accent"></div></div>
+        <div class="sec"><span class="label">머리 색</span><div class="swatches" id="cr-haircolor"></div></div>
+        <div class="actions">
+          <button class="btn gold" type="submit" id="cr-save">저장</button>
+          <button class="btn ghost" type="button" id="cr-delete">삭제</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</section>
+
+<section id="scr-cpu" class="screen" hidden>
+  <div class="wrap narrow">
+    <header class="bar"><button class="back" data-back type="button">← 메뉴</button><h2>CPU 대전</h2></header>
+    <div class="sec"><span class="label">내 파이터</span><div class="roster" id="cpu-me"></div></div>
+    <div class="sec"><span class="label">상대 파이터</span><div class="roster" id="cpu-op"></div></div>
+    <div class="sec"><span class="label">난이도</span><div class="chips" id="cpu-lv"></div></div>
+    <div class="sec"><span class="label">스테이지</span><div class="chips" id="cpu-stage"></div></div>
+    <button class="btn gold big" type="button" id="cpu-start">대전 시작</button>
+  </div>
+</section>
+
+<section id="scr-online" class="screen" hidden>
+  <div class="wrap narrow">
+    <header class="bar"><button class="back" data-back type="button">← 메뉴</button><h2>온라인 대전</h2></header>
+    <p class="netkind" id="netkind">연결 방식을 확인하는 중…</p>
+    <div id="on-home" class="sec-stack">
+      <div class="sec"><span class="label">내 파이터</span><div class="roster" id="on-pick"></div></div>
+      <div class="oa">
+        <div class="oa-card">
+          <h3>방 만들기</h3>
+          <p>4자리 코드를 만들어 친구에게 알려 주세요.</p>
+          <button class="btn gold" type="button" id="on-create">방 만들기</button>
+        </div>
+        <div class="oa-card">
+          <h3>방 참가</h3>
+          <p>친구가 알려 준 코드를 입력하세요.</p>
+          <form class="join-row" id="on-join-form">
+            <input class="code-in" id="on-code" type="text" inputmode="text" autocomplete="off" autocapitalize="characters" spellcheck="false" maxlength="4" placeholder="ABCD" aria-label="방 코드">
+            <button class="btn" type="submit" id="on-join">참가</button>
+          </form>
+        </div>
+      </div>
+    </div>
+    <div id="on-wait" class="sec-stack" hidden>
+      <div class="code-box">
+        <span class="label">방 코드</span>
+        <div class="code" id="on-code-big">----</div>
+        <button class="btn" type="button" id="on-copy">코드 복사</button>
+      </div>
+      <div class="waiting"><span class="pulse" aria-hidden="true"></span>친구가 이 코드로 들어오기를 기다리는 중</div>
+    </div>
+    <div id="on-lobby" class="sec-stack" hidden>
+      <div class="vs"><div class="pcard p1" id="lob-1"></div><div class="mid">VS</div><div class="pcard p2" id="lob-2"></div></div>
+      <div class="sec" id="lob-host">
+        <span class="label">스테이지</span>
+        <div class="chips" id="lob-stage"></div>
+        <button class="btn gold big" type="button" id="lob-start">대전 시작</button>
+      </div>
+      <p class="dim center" id="lob-guest" hidden>호스트가 대전을 시작하면 바로 시작돼요.</p>
+    </div>
+    <p class="msg" id="on-msg" role="status" aria-live="polite"></p>
+    <button class="btn ghost" type="button" id="on-leave" hidden>방 나가기</button>
+  </div>
+</section>
+
+<section id="scr-fight" class="screen fight" hidden>
+  <div class="stage-wrap" id="stage-wrap">
+    <div class="cv-box" id="cv-box">
+      <canvas id="cv-game" aria-label="대전 화면"></canvas>
+      <button class="pause" id="btn-pause" type="button" aria-label="일시정지"><svg viewBox="0 0 14 14" aria-hidden="true"><rect x="2" y="1" width="3.5" height="12" rx="1"/><rect x="8.5" y="1" width="3.5" height="12" rx="1"/></svg></button>
+    </div>
+  </div>
+  <p class="rotate-hint">휴대폰을 가로로 돌리면 화면이 커져요</p>
+  <p class="keys-hint">이동 ← → · 점프 ↑ · 막기 ↓ · 펀치 J · 킥 K · 필살기 L · 일시정지 Esc</p>
+  <div class="pads" id="pads">
+    <div class="pad pad-move">
+      <button class="pb u" data-k="u" type="button" aria-label="점프">▲</button>
+      <button class="pb l" data-k="l" type="button" aria-label="왼쪽">◀</button>
+      <button class="pb g" data-k="g" type="button" aria-label="막기">막기</button>
+      <button class="pb r" data-k="r" type="button" aria-label="오른쪽">▶</button>
+    </div>
+    <div class="pad pad-act">
+      <button class="pb s" data-k="s" type="button" id="pb-s">필살</button>
+      <button class="pb p" data-k="p" type="button">펀치</button>
+      <button class="pb k" data-k="k" type="button">킥</button>
+    </div>
+  </div>
+  <div class="overlay" id="ov-pause" hidden>
+    <div class="ocard">
+      <p class="kicker" id="pause-kicker">일시정지</p>
+      <h2 id="pause-title">잠깐 쉬는 중</h2>
+      <button class="btn gold" type="button" id="pause-resume">계속하기</button>
+      <button class="btn" type="button" id="pause-restart">처음부터 다시</button>
+      <button class="btn ghost" type="button" id="pause-quit">메뉴로 나가기</button>
+    </div>
+  </div>
+  <div class="overlay" id="ov-result" hidden>
+    <div class="ocard">
+      <p class="kicker" id="res-kicker">경기 결과</p>
+      <h2 id="res-title">-</h2>
+      <p class="dim" id="res-sub"></p>
+      <button class="btn gold" type="button" id="res-again">다시 하기</button>
+      <button class="btn ghost" type="button" id="res-menu">메뉴로</button>
+      <p class="dim" id="res-note" hidden></p>
+    </div>
+  </div>
+</section>
+
+<div class="overlay" id="ov-help" hidden>
+  <div class="ocard">
+    <p class="kicker">조작법</p>
+    <h2>이렇게 싸워요</h2>
+    <ul class="help-list">
+      <li><b>이동</b><span>◀ ▶ 버튼 · 키보드 ← → 또는 A D</span></li>
+      <li><b>점프</b><span>▲ 버튼 · ↑ 또는 W. 공중에서 펀치·킥 가능</span></li>
+      <li><b>막기</b><span>막기 버튼 · ↓ 또는 S. 대미지를 크게 줄여요</span></li>
+      <li><b>펀치</b><span>J. 맞히면서 연타하면 3연타 콤보</span></li>
+      <li><b>킥</b><span>K. 느리지만 멀리 닿고 아파요</span></li>
+      <li><b>필살기</b><span>L. 게이지 50 이상일 때. 펀치·킥이 맞은 직후 누르면 이어져요</span></li>
+    </ul>
+    <p class="dim">레슬러의 잡기는 막을 수 없어요. 60초 안에 쓰러뜨리지 못하면 남은 체력으로 판정해요.</p>
+    <button class="btn gold" type="button" id="help-close">알겠어요</button>
+  </div>
+</div>
+<div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
+
+</div>
+<script>
+(() => {
+'use strict';
+document.documentElement.lang = 'ko';
+
+/* =========================================================
+   helpers
+   ========================================================= */
+const $ = (s, r = document) => r.querySelector(s);
+const $$ = (s, r = document) => Array.from(r.querySelectorAll(s));
+const clamp = (v, a, b) => (v < a ? a : v > b ? b : v);
+const lerp = (a, b, t) => a + (b - a) * t;
+const rnd = (a, b) => a + Math.random() * (b - a);
+const rint = (a, b) => a + Math.floor(Math.random() * (b - a + 1));
+const pick = a => a[Math.floor(Math.random() * a.length)];
+const r1 = v => Math.round(v * 10) / 10;
+const num = v => (typeof v === 'number' && isFinite(v) ? v : 0);
+const uid = () => 'f' + Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
+const store = {
+  get(k, d) { try { const v = localStorage.getItem(k); return v == null ? d : JSON.parse(v); } catch (e) { return d; } },
+  set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) { /* storage blocked: keep going */ } }
+};
+const el = (tag, cls, txt) => { const e = document.createElement(tag); if (cls) e.className = cls; if (txt != null) e.textContent = txt; return e; };
+
+/* =========================================================
+   fighter data
+   ========================================================= */
+const STYLES = {
+  boxer:    { name: '복서',   sp: '승룡 어퍼컷',   desc: '주먹이 빠르고 강해요. 필살기는 위로 솟구치는 무적 어퍼컷이라 점프 공격을 받아치기 좋아요.' },
+  tkd:      { name: '태권도', sp: '회오리 발차기', desc: '발차기가 길고 높아요. 필살기는 앞으로 돌진하며 세 번 차는 회전 발차기예요.' },
+  wrestler: { name: '레슬러', sp: '바디 슬램',     desc: '느리지만 한 방이 묵직해요. 필살기는 막기로 막을 수 없는 잡아 메치기예요.' },
+  kungfu:   { name: '쿵푸',   sp: '장풍',         desc: '고르게 강한 균형형이에요. 필살기는 멀리 날아가는 기공탄이에요.' },
+  ninja:    { name: '닌자',   sp: '그림자 베기',   desc: '몸이 가볍고 빨라요. 필살기는 상대 뒤로 순간이동해 베는 기술이에요.' },
+};
+const STYLE_KEYS = Object.keys(STYLES);
+const STATS = [['pow', '힘'], ['spd', '스피드'], ['hp', '맷집'], ['tec', '기술']];
+const STAT_TOTAL = 12;
+const SKINS = ['#ffdfc2', '#f2c393', '#d89a64', '#a86a3f', '#6b4027'];
+const COLORS = ['#e8403a', '#f2892b', '#f5c834', '#3fb85b', '#20b8b0', '#2f8de4', '#6b4fd8', '#e35aa6', '#f4f1ea', '#3a3a4a'];
+const HAIR_COLORS = ['#1d1a1f', '#5a3a22', '#b98a4a', '#e0d8c8', '#d43b2f', '#3b6fd8'];
+const HAIRS = [['short', '짧은 머리'], ['spike', '삐죽 머리'], ['mohawk', '모히칸'], ['pony', '묶은 머리'], ['bald', '민머리']];
+const BUILDS = [['slim', '날씬'], ['mid', '보통'], ['big', '거구']];
+const OUTFITS = [['gi', '도복'], ['tank', '민소매'], ['bare', '상의 탈의']];
+const NAME_A = ['번개', '강철', '불꽃', '바람', '천둥', '그림자', '폭풍', '얼음', '황금', '돌', '달빛', '태풍', '철벽', '회오리', '벼락', '은빛'];
+const NAME_B = ['주먹', '발차기', '곰', '호랑이', '늑대', '용', '매', '킥', '펀치', '대장', '장군', '소년', '소녀', '전사', '검객', '여우'];
+const HEX = /^#[0-9a-fA-F]{6}$/;
+
+const PRESETS = [
+  { id: 'p-hong', name: '홍번개', style: 'tkd', stats: { pow: 3, spd: 4, hp: 2, tec: 3 },
+    look: { build: 'slim', hair: 'short', outfit: 'gi', skin: 0, body: '#f4f1ea', accent: '#3a3a4a', hairColor: '#1d1a1f' } },
+  { id: 'p-gom', name: '강철곰', style: 'wrestler', stats: { pow: 5, spd: 1, hp: 4, tec: 2 },
+    look: { build: 'big', hair: 'bald', outfit: 'bare', skin: 2, body: '#2f8de4', accent: '#f5c834', hairColor: '#1d1a1f' } },
+  { id: 'p-jab', name: '잽마스터', style: 'boxer', stats: { pow: 3, spd: 4, hp: 3, tec: 2 },
+    look: { build: 'mid', hair: 'spike', outfit: 'tank', skin: 1, body: '#e8403a', accent: '#f4f1ea', hairColor: '#5a3a22' } },
+  { id: 'p-yeon', name: '연기', style: 'ninja', stats: { pow: 2, spd: 5, hp: 2, tec: 3 },
+    look: { build: 'slim', hair: 'pony', outfit: 'gi', skin: 0, body: '#3a3a4a', accent: '#e8403a', hairColor: '#1d1a1f' } },
+  { id: 'p-cheong', name: '청룡', style: 'kungfu', stats: { pow: 3, spd: 3, hp: 3, tec: 3 },
+    look: { build: 'mid', hair: 'mohawk', outfit: 'gi', skin: 1, body: '#20b8b0', accent: '#f5c834', hairColor: '#1d1a1f' } },
+];
+
+function cleanName(s) {
+  return String(s == null ? '' : s).replace(/[\u0000-\u001f\u007f-\u009f\u00ad\u200b-\u200f\u2028-\u202e\u2060-\u206f\ufeff<>]/g, '').trim().slice(0, 8);
+}
+function sanitizeFighter(f) {
+  f = f && typeof f === 'object' ? f : {};
+  const st = f.stats && typeof f.stats === 'object' ? f.stats : {};
+  const stats = {};
+  for (const [k] of STATS) stats[k] = clamp(Math.round(Number(st[k]) || 3), 1, 5);
+  let sum = STATS.reduce((a, [k]) => a + stats[k], 0);
+  while (sum > STAT_TOTAL) {
+    const k = STATS.map(s => s[0]).sort((a, b) => stats[b] - stats[a])[0];
+    stats[k]--; sum--;
+  }
+  const lk = f.look && typeof f.look === 'object' ? f.look : {};
+  const inList = (v, list, d) => (list.some(x => x[0] === v) ? v : d);
+  const col = (v, d) => (typeof v === 'string' && HEX.test(v) ? v.toLowerCase() : d);
+  return {
+    id: typeof f.id === 'string' && /^[\w-]{1,40}$/.test(f.id) ? f.id : uid(),
+    name: cleanName(f.name) || '무명',
+    style: STYLE_KEYS.includes(f.style) ? f.style : 'kungfu',
+    stats,
+    look: {
+      build: inList(lk.build, BUILDS, 'mid'),
+      hair: inList(lk.hair, HAIRS, 'short'),
+      outfit: inList(lk.outfit, OUTFITS, 'gi'),
+      skin: clamp(Math.round(Number(lk.skin) || 0), 0, SKINS.length - 1),
+      body: col(lk.body, '#e8403a'),
+      accent: col(lk.accent, '#f5c834'),
+      hairColor: col(lk.hairColor, '#1d1a1f'),
+    },
+  };
+}
+function randomFighter() {
+  const stats = { pow: 1, spd: 1, hp: 1, tec: 1 };
+  let left = STAT_TOTAL - 4;
+  while (left > 0) { const k = pick(['pow', 'spd', 'hp', 'tec']); if (stats[k] < 5) { stats[k]++; left--; } }
+  const body = pick(COLORS);
+  let accent = pick(COLORS);
+  while (accent === body) accent = pick(COLORS);
+  return sanitizeFighter({
+    id: uid(), name: pick(NAME_A) + pick(NAME_B), style: pick(STYLE_KEYS), stats,
+    look: { build: pick(BUILDS)[0], hair: pick(HAIRS)[0], outfit: pick(OUTFITS)[0], skin: rint(0, SKINS.length - 1), body, accent, hairColor: pick(HAIR_COLORS) },
+  });
+}
+// same look on both sides is confusing: recolor player 2 deterministically
+function sameLook(a, b) { return JSON.stringify([a.style, a.look]) === JSON.stringify([b.style, b.look]); }
+function tintDef(d) {
+  const c = JSON.parse(JSON.stringify(d));
+  const i = COLORS.indexOf(c.look.body);
+  c.look.body = COLORS[(i + 5 + COLORS.length) % COLORS.length];
+  if (c.look.body === c.look.accent) c.look.body = COLORS[(i + 6 + COLORS.length) % COLORS.length];
+  return c;
+}
+
+/* =========================================================
+   fight rules
+   ========================================================= */
+const W = 960, H = 540, GY = 470;          // logical stage size, ground line
+const GRAV = 0.82, TIME = 60 * 60, XMIN = 50, XMAX = 910;
+const SP_COST = 50;
+const NOIN = { l: 0, r: 0, u: 0, g: 0, p: 0, k: 0, s: 0 };
+const ACTIONABLE = { idle: 1, walk: 1, guard: 1 };
+const GRABBABLE = { idle: 1, walk: 1, guard: 1, hit: 1, block: 1, atk: 1 };
+
+function makeMoves(style, s) {
+  const powM = 0.8 + 0.1 * s.pow;
+  const spd = 0.85 + 0.075 * s.spd;
+  const spM = 0.9 + 0.05 * s.tec;
+  const styM = style === 'wrestler' ? 1.12 : style === 'ninja' ? 0.9 : 1;
+  const fs = v => Math.max(2, Math.round(v / spd));
+  const B = {
+    p1: { su: fs(4), ac: 3, rc: fs(8),  dmg: 4, hb: [16, 80, 92, 130],  hs: 14, bs: 9,  kb: 2.4, next: 'p2', cancel: 1, pose: ['idle', 'jab'] },
+    p2: { su: fs(5), ac: 3, rc: fs(10), dmg: 5, hb: [16, 86, 92, 130],  hs: 15, bs: 10, kb: 3,   next: 'p3', cancel: 1, pose: ['idle', 'cross'] },
+    p3: { su: fs(7), ac: 4, rc: fs(17), dmg: 8, hb: [16, 84, 84, 136],  hs: 20, bs: 12, kb: 6, kd: 1, launch: 7, cancel: 1, heavy: 1, pose: ['windup', 'hook'] },
+    k:  { su: fs(8), ac: 4, rc: fs(15), dmg: 8, hb: [22, 104, 58, 120], hs: 18, bs: 12, kb: 5, cancel: 1, heavy: 1, pose: ['chamber', 'kick'] },
+    ap: { su: 3, ac: 9, rc: 3,   dmg: 5, hb: [8, 74, 64, 118], hs: 15, bs: 9,  kb: 3, air: 1, pose: ['jump', 'apunch'] },
+    ak: { su: 4, ac: 16, rc: 3,  dmg: 7, hb: [6, 82, 4, 66],   hs: 17, bs: 11, kb: 4, air: 1, heavy: 1, pose: ['jump', 'akick'] },
+  };
+  switch (style) {
+    case 'boxer': B.p1.dmg += 1; B.p2.dmg += 1; B.p3.dmg += 1.5; B.p1.su = Math.max(3, B.p1.su - 1); B.k.dmg -= 1; B.p3.hb = [16, 90, 84, 140]; break;
+    case 'tkd': B.k.hb = [22, 124, 62, 132]; B.k.dmg += 2; B.k.su = Math.max(4, B.k.su - 1); B.k.pose = ['chamber', 'hkick']; B.ak.dmg += 2; B.ak.hb = [6, 94, 4, 70]; break;
+    case 'wrestler': B.p1.su += 1; B.p2.su += 1; B.p3.dmg += 2; B.k.kb = 7; break;
+    case 'kungfu': B.ap.dmg += 1; B.k.hs += 2; break;
+    case 'ninja': B.p1.rc = Math.max(4, B.p1.rc - 2); B.p2.rc = Math.max(5, B.p2.rc - 2); B.ak.su = 3; break;
+  }
+  const SP = {
+    boxer:    { su: 3, ac: 12, rc: 16, dmg: 15, hb: [0, 66, 60, 178], hs: 30, bs: 16, kb: 2.5, kd: 1, launch: 11, invul: [0, 9], lift: { at: 3, vy: 12.5, vx: 2.4 }, heavy: 1, pose: ['crouch', 'upper'] },
+    tkd:      { su: 6, ac: 22, rc: 12, dmg: 6, hits: [0, 9, 18], hb: [-24, 96, 46, 132], hs: 16, bs: 10, kb: 2, kd: 1, launch: 8, step: [[4, 28, 6.4]], heavy: 1, spin: 1, pose: ['chamber', 'hkick'] },
+    wrestler: { su: 5, ac: 5, rc: 28, dmg: 21, grab: 1, range: 86, unblock: 1, pose: ['idle', 'grab'] },
+    kungfu:   { su: 13, ac: 2, rc: 18, dmg: 0, proj: { vx: 8.6, dmg: 12, h: 106, r: 20, hs: 22, bs: 14, kb: 6, heavy: 1, isSp: 1 }, pose: ['charge', 'palm'] },
+    ninja:    { su: 10, ac: 6, rc: 16, dmg: 14, hb: [-52, 76, 30, 152], hs: 24, bs: 14, kb: 4, kd: 1, launch: 8, invul: [0, 13], tele: 8, heavy: 1, pose: ['crouch', 'slash'] },
+  }[style];
+  B.sp = Object.assign({ isSp: 1 }, SP);
+  const D = (v, m) => Math.max(1, Math.round(v * powM * styM * m * 10) / 10);
+  for (const k in B) {
+    const M = B[k];
+    if (M.dmg) M.dmg = D(M.dmg, k === 'sp' ? spM : 1);
+    if (M.proj) M.proj = Object.assign({}, M.proj, { dmg: D(M.proj.dmg, spM) });
+  }
+  return B;
+}
+function buildParams(def) {
+  const s = def.stats, style = def.style;
+  const spd = 0.85 + 0.075 * s.spd;
+  return {
+    maxHp: 70 + 12 * s.hp,
+    powM: 0.8 + 0.1 * s.pow,
+    spd,
+    tecM: 0.7 + 0.15 * s.tec,
+    walk: 3.3 * spd * (style === 'ninja' ? 1.12 : style === 'wrestler' ? 0.86 : 1),
+    jumpV: style === 'ninja' ? 17.6 : style === 'wrestler' ? 15.2 : 16.2,
+    moves: makeMoves(style, s),
+  };
+}
+function mkFighter(def, idx) {
+  const prm = buildParams(def);
+  return {
+    idx, def, prm, x: idx ? 630 : 330, y: 0, vx: 0, vy: 0, face: idx ? -1 : 1, hp: prm.maxHp, meter: 0,
+    st: 'idle', t: 0, mv: null, mvStart: -1, hitMask: 0, connected: false, stun: 0, inv: 0,
+    combo: 0, comboT: 99, buf: { p: 0, k: 0, s: 0 }, wins: 0, airAtk: false, jug: 0, jumps: 0,
+    gHeld: false, maxCombo: 0, tAdv: 0, rx: null, ry: null,
+  };
+}
+
+const PH = ['intro', 'fight', 'ko', 'timeup', 'end'];
+const ANN_K = ['round', 'fight', 'ko', 'time', 'win', 'draw'];
+const EV_T = ['hit', 'hhit', 'block', 'sp', 'ko', 'dust', 'grab', 'proj', 'clash', 'ann', 'swing', 'tele'];
+const ST_L = ['idle', 'walk', 'jump', 'guard', 'atk', 'hit', 'block', 'air', 'down', 'rise', 'grabbed', 'slam', 'ko', 'win'];
+const MV_L = [null, 'p1', 'p2', 'p3', 'k', 'ap', 'ak', 'sp'];
+
+function newGame(defs, stage) {
+  const G = {
+    frame: 0, phase: 'intro', pt: 0, round: 1, timer: TIME, hitstop: 0,
+    F: [mkFighter(defs[0], 0), mkFighter(defs[1], 1)], P: [], E: [], eid: 0, pid: 0,
+    ann: { k: 'round', n: 1, t: 0 }, winner: -1, koWinner: -1, stage,
+  };
+  announce(G, 'round', 1);
+  return G;
+}
+function ev(G, ty, x, y, a) { G.E.push({ id: ++G.eid, ty, x, y, a: a || 0 }); if (G.E.length > 24) G.E.shift(); }
+function announce(G, k, n) { G.ann = { k, n: n || 0, t: G.frame }; ev(G, 'ann', 0, 0, ANN_K.indexOf(k)); }
+function setSt(F, st) { if (F.st !== st) { F.st = st; F.t = 0; } }
+
+function resetRound(G) {
+  G.F.forEach((F, i) => Object.assign(F, {
+    x: i ? 630 : 330, y: 0, vx: 0, vy: 0, face: i ? -1 : 1, hp: F.prm.maxHp, st: 'idle', t: 0, mv: null,
+    inv: 0, stun: 0, combo: 0, comboT: 99, buf: { p: 0, k: 0, s: 0 }, airAtk: false, jug: 0,
+  }));
+  G.P = []; G.timer = TIME; G.phase = 'intro'; G.pt = 0; G.koWinner = -1;
+  announce(G, 'round', G.round);
+}
+
+function step(G, inputs) {
+  G.frame++;
+  for (let i = 0; i < 2; i++) {
+    const F = G.F[i], I = inputs[i];
+    if (I.p) F.buf.p = 9;
+    if (I.k) F.buf.k = 9;
+    if (I.s) F.buf.s = 9;
+    F.gHeld = !!I.g;
+  }
+  if (G.hitstop > 0) { G.hitstop--; return; }
+  G.pt++;
+  let ctrl = false;
+  switch (G.phase) {
+    case 'intro':
+      if (G.pt === 60) announce(G, 'fight');
+      if (G.pt >= 80) { G.phase = 'fight'; G.pt = 0; }
+      break;
+    case 'fight':
+      ctrl = true;
+      if (--G.timer <= 0) { G.timer = 0; G.phase = 'timeup'; G.pt = 0; announce(G, 'time'); }
+      break;
+    case 'ko':
+      if (G.pt < 50 && G.pt % 2) return;   // slow motion
+      if (G.pt >= 100 && G.koWinner >= 0) { const Wf = G.F[G.koWinner]; if (ACTIONABLE[Wf.st]) setSt(Wf, 'win'); }
+      if (G.pt >= 170) endRound(G);
+      break;
+    case 'timeup':
+      if (G.pt >= 110) endRound(G);
+      break;
+    case 'end':
+      if (G.winner >= 0) { const Wf = G.F[G.winner]; if (ACTIONABLE[Wf.st]) setSt(Wf, 'win'); }
+      break;
+  }
+  if (!ctrl) for (const F of G.F) F.buf.p = F.buf.k = F.buf.s = 0;
+  for (let i = 0; i < 2; i++) updFighter(G, G.F[i], G.F[1 - i], ctrl ? inputs[i] : NOIN, ctrl);
+  updProj(G, G.phase === 'fight');
+  if (G.phase === 'fight') resolveHits(G);
+  pushApart(G);
+}
+
+function startMove(G, F, key) {
+  const M = F.prm.moves[key];
+  F.st = 'atk'; F.mv = key; F.t = 0; F.hitMask = 0; F.connected = false; F.mvStart = G.frame;
+  F.buf.p = F.buf.k = F.buf.s = 0;
+  if (!M.air) F.vx = 0;
+  if (key === 'sp') { F.meter -= SP_COST; ev(G, 'sp', F.x, F.y + 100, F.idx); }
+  else ev(G, 'swing', F.x, F.y + 100, 0);
+}
+
+function updFighter(G, F, O, inp, ctrl) {
+  const P = F.prm;
+  F.t++;
+  if (F.inv > 0) F.inv--;
+  if (F.comboT < 999) F.comboT++;
+  switch (F.st) {
+    case 'idle': case 'walk': case 'guard': {
+      if (Math.abs(O.x - F.x) > 2) F.face = O.x > F.x ? 1 : -1;
+      if (!ctrl) { F.vx = 0; setSt(F, 'idle'); break; }
+      if (F.buf.s && F.meter >= SP_COST) { startMove(G, F, 'sp'); break; }
+      if (F.buf.p) { startMove(G, F, 'p1'); break; }
+      if (F.buf.k) { startMove(G, F, 'k'); break; }
+      const d = (inp.r ? 1 : 0) - (inp.l ? 1 : 0);
+      if (inp.u) { setSt(F, 'jump'); F.vy = P.jumpV; F.vx = d * P.walk * 1.25; F.airAtk = false; F.jumps++; break; }
+      if (inp.g) { setSt(F, 'guard'); F.vx = 0; break; }
+      if (d) { setSt(F, 'walk'); F.vx = d * P.walk * (d === F.face ? 1 : 0.78); }
+      else { setSt(F, 'idle'); F.vx = 0; }
+      break;
+    }
+    case 'jump':
+      if (ctrl && !F.airAtk) {
+        if (F.buf.k) { F.airAtk = true; startMove(G, F, 'ak'); }
+        else if (F.buf.p) { F.airAtk = true; startMove(G, F, 'ap'); }
+      }
+      break;
+    case 'atk': runMove(G, F, O); break;
+    case 'hit': case 'block':
+      if (--F.stun <= 0) setSt(F, 'idle');
+      break;
+    case 'air':
+      if (F.y <= 0 && F.vy <= 0 && F.t > 2) { setSt(F, F.hp <= 0 ? 'ko' : 'down'); F.vx *= 0.4; ev(G, 'dust', F.x, 0, 1); }
+      break;
+    case 'down': if (F.t >= 34) setSt(F, 'rise'); break;
+    case 'rise': if (F.t >= 16) { setSt(F, 'idle'); F.inv = 8; } break;
+    case 'slam': runSlam(G, F, O); break;
+    case 'grabbed': if (O.st !== 'slam') { setSt(F, 'air'); F.vy = Math.max(F.vy, 2); F.jug = 9; } break;
+    case 'ko': break;
+    case 'win': F.vx = 0; break;
+  }
+  if (F.st !== 'grabbed') {
+    if (F.y > 0 || F.vy > 0) { F.vy -= GRAV; F.y += F.vy; if (F.y <= 0) { F.y = 0; F.vy = 0; } }
+    F.x += F.vx;
+    if (F.y <= 0 && (F.st === 'hit' || F.st === 'block' || F.st === 'down' || F.st === 'ko' || F.st === 'rise')) F.vx *= 0.82;
+  }
+  if (F.st === 'jump' && F.y <= 0 && F.vy <= 0 && F.t > 1) { setSt(F, 'idle'); F.vx = 0; ev(G, 'dust', F.x, 0, 0); }
+  F.x = clamp(F.x, XMIN, XMAX);
+  if (F.buf.p > 0) F.buf.p--;
+  if (F.buf.k > 0) F.buf.k--;
+  if (F.buf.s > 0) F.buf.s--;
+}
+
+function runMove(G, F, O) {
+  const M = F.prm.moves[F.mv], t = F.t, tot = M.su + M.ac + M.rc;
+  if (M.step) {
+    let moving = false;
+    for (const [a, b, v] of M.step) if (t >= a && t < b) { F.vx = v * F.face; moving = true; }
+    if (!moving) F.vx *= 0.6;
+  } else if (!M.air && !M.lift) F.vx *= 0.6;
+  if (M.lift && t === M.lift.at) { F.vy = M.lift.vy; F.vx = M.lift.vx * F.face; }
+  if (M.tele && t === M.tele) {
+    const side = O.x >= F.x ? 1 : -1;
+    let nx = O.x + side * 72;
+    if (nx < XMIN + 4 || nx > XMAX - 4) nx = clamp(O.x - side * 72, XMIN, XMAX);
+    ev(G, 'tele', F.x, 90, 0);
+    F.x = nx; F.face = O.x >= F.x ? 1 : -1;
+    ev(G, 'tele', F.x, 90, 1);
+  }
+  if (M.invul && t >= M.invul[0] && t < M.invul[1]) F.inv = Math.max(F.inv, 1);
+  if (M.proj && t === M.su && !G.P.some(p => p.o === F.idx)) {
+    G.P.push({ id: ++G.pid, o: F.idx, x: F.x + F.face * 58, y: F.y + M.proj.h, vx: M.proj.vx * F.face, r: M.proj.r, life: 150, M: M.proj });
+    ev(G, 'proj', F.x, F.y + 100, 0);
+  }
+  if (M.grab && t >= M.su && t < M.su + M.ac) tryGrab(G, F, O, M);
+  if (F.st !== 'atk') return;   // grab connected
+  if (F.connected && t >= M.su + M.ac - 1) {
+    if (M.cancel && F.buf.s && F.meter >= SP_COST && F.y <= 0) { startMove(G, F, 'sp'); return; }
+    if (M.next && F.buf.p) { startMove(G, F, M.next); return; }
+  }
+  if (M.air) {
+    if (F.y <= 0 && t > 1) { setSt(F, 'idle'); F.mv = null; F.vx = 0; ev(G, 'dust', F.x, 0, 0); }
+    else if (t >= tot) { setSt(F, 'jump'); F.mv = null; }
+    return;
+  }
+  if (M.lift) {
+    if (F.y <= 0 && t > M.lift.at + 1) F.vx *= 0.6;
+    if (t >= tot && F.y <= 0) { setSt(F, 'idle'); F.mv = null; F.vx = 0; }
+    return;
+  }
+  if (t >= tot) { setSt(F, 'idle'); F.mv = null; }
+}
+
+function tryGrab(G, F, O, M) {
+  if (O.y > 0 || O.inv > 0 || !GRABBABLE[O.st]) return;
+  const dx = O.x - F.x;
+  if (Math.abs(dx) > M.range || (Math.abs(dx) > 8 && Math.sign(dx) !== F.face)) return;
+  F.st = 'slam'; F.t = 0; F.vx = 0; F.slamDmg = M.dmg;
+  O.st = 'grabbed'; O.t = 0; O.vx = 0; O.vy = 0; O.mv = null;
+  ev(G, 'grab', O.x, 100, 0);
+}
+function runSlam(G, F, O) {
+  const t = F.t;
+  if (O.st === 'grabbed') {
+    if (t < 18) { O.x = clamp(F.x + F.face * 34, XMIN, XMAX); O.y = t * 5.2; O.face = -F.face; }
+    else {
+      O.x = clamp(F.x + F.face * 60, XMIN, XMAX); O.y = 30; O.vy = -5; O.vx = F.face * 3;
+      O.st = 'air'; O.t = 8; O.jug = 9;
+      F.combo = 0;
+      damage(G, F, O, F.slamDmg, true, true);
+      if (O.hp > 0) { G.hitstop = 10; }
+      ev(G, 'hhit', O.x, 30, 0);
+    }
+  }
+  if (t >= 40) setSt(F, 'idle');
+}
+
+function activeHit(F) {
+  if (F.st !== 'atk' || !F.mv) return null;
+  const M = F.prm.moves[F.mv];
+  if (M.grab || M.proj || !M.hb) return null;
+  const t = F.t;
+  let i = -1;
+  if (M.hits) { for (let j = 0; j < M.hits.length; j++) { const a = M.su + M.hits[j]; if (t >= a && t < a + 3) i = j; } }
+  else if (t >= M.su && t < M.su + M.ac) i = 0;
+  if (i < 0 || (F.hitMask & (1 << i))) return null;
+  const xa = F.x + F.face * M.hb[0], xb = F.x + F.face * M.hb[1];
+  return { M, i, box: { x0: Math.min(xa, xb), x1: Math.max(xa, xb), y0: F.y + M.hb[2], y1: F.y + M.hb[3] } };
+}
+function hurt(D) {
+  if (D.inv > 0) return null;
+  if (D.st === 'down' || D.st === 'rise' || D.st === 'ko' || D.st === 'grabbed' || D.st === 'slam') return null;
+  if (D.st === 'air' && D.jug >= 2) return null;
+  const h = D.st === 'air' ? 90 : D.st === 'jump' ? 130 : 150;
+  return { x0: D.x - 27, x1: D.x + 27, y0: D.y, y1: D.y + h };
+}
+const overlap = (a, b) => a && b && a.x0 < b.x1 && a.x1 > b.x0 && a.y0 < b.y1 && a.y1 > b.y0;
+
+function resolveHits(G) {
+  const [A, B] = G.F;
+  const ha = activeHit(A), hb = activeHit(B);
+  const hitA = ha && overlap(ha.box, hurt(B));
+  const hitB = hb && overlap(hb.box, hurt(A));
+  if (hitA) applyHit(G, A, B, ha.M, ha.i, ha.box, A.face, false);
+  if (hitB) applyHit(G, B, A, hb.M, hb.i, hb.box, B.face, false);
+}
+
+function damage(G, A, D, dmg, heavy, isSp) {
+  const inCombo = D.st === 'hit' || D.st === 'air' || D.st === 'grabbed';
+  A.combo = inCombo ? A.combo + 1 : 1;
+  A.comboT = 0;
+  if (A.combo > A.maxCombo) A.maxCombo = A.combo;
+  const d = dmg * Math.max(0.5, 1 - 0.08 * (A.combo - 1));
+  D.hp = Math.max(0, D.hp - d);
+  if (!isSp) A.meter = Math.min(100, A.meter + d * 1.4 * A.prm.tecM);
+  D.meter = Math.min(100, D.meter + d * 0.8 * D.prm.tecM);
+  if (D.hp <= 0) {
+    D.st = 'air'; D.t = 0; D.vy = 9; D.vx = (A.x <= D.x ? 1 : -1) * 4.5; D.mv = null; D.jug = 9;
+    koStart(G, A.idx);
+  }
+  return d;
+}
+function koStart(G, winnerIdx) {
+  if (G.phase === 'ko') { G.koWinner = -1; return; }
+  G.phase = 'ko'; G.pt = 0; G.koWinner = winnerIdx; G.hitstop = 26;
+  announce(G, 'ko');
+  ev(G, 'ko', G.F[1 - winnerIdx].x, 100, 0);
+}
+
+function applyHit(G, A, D, M, i, box, dir, isProj) {
+  if (!isProj) { A.hitMask |= (1 << i); A.connected = true; }
+  const nHits = M.hits ? M.hits.length : 1, last = i === nHits - 1;
+  const hy = clamp(((box ? Math.max(box.y0, D.y) : D.y + 100) + (box ? Math.min(box.y1, D.y + 150) : D.y + 110)) / 2, D.y + 25, D.y + 145);
+  const hx = D.x - dir * 18;
+  const blocking = !M.unblock && D.y <= 0 && (D.st === 'guard' || D.st === 'block' || (ACTIONABLE[D.st] && D.gHeld));
+  if (blocking) {
+    const chip = Math.max(0.5, M.dmg * 0.12);
+    D.hp = Math.max(1, D.hp - chip);
+    setSt(D, 'block'); D.t = 0; D.stun = M.bs; D.vx = dir * (M.kb * 0.8 + 2); D.face = -dir;
+    if (D.x <= XMIN + 4 || D.x >= XMAX - 4) A.vx = -dir * 3;
+    if (!M.isSp) A.meter = Math.min(100, A.meter + M.dmg * 0.5 * A.prm.tecM);
+    D.meter = Math.min(100, D.meter + M.dmg * 0.4 * D.prm.tecM);
+    G.hitstop = 5;
+    ev(G, 'block', hx, hy, 0);
+    return;
+  }
+  const wasAir = D.y > 0 || D.st === 'air' || D.st === 'jump';
+  const prevSt = D.st;
+  damage(G, A, D, M.dmg, M.heavy, M.isSp);
+  if (D.hp > 0) {
+    if ((M.kd && last) || wasAir) {
+      D.jug = prevSt === 'air' ? D.jug + 1 : 0;
+      D.st = 'air'; D.t = 0; D.vy = M.launch || 6; D.vx = dir * (M.kb || 4) * 0.8; D.mv = null;
+    } else {
+      D.st = 'hit'; D.t = 0; D.stun = M.hs; D.vx = dir * M.kb; D.mv = null;
+    }
+    G.hitstop = M.heavy ? 8 : 5;
+  }
+  ev(G, M.heavy || !last ? 'hhit' : 'hit', hx, hy, 0);
+}
+
+function updProj(G, live) {
+  for (const p of G.P) { p.x += p.vx; p.life--; }
+  for (let a = 0; a < G.P.length; a++) for (let b = a + 1; b < G.P.length; b++) {
+    const p = G.P[a], q = G.P[b];
+    if (p.o !== q.o && !p.dead && !q.dead && Math.abs(p.x - q.x) < p.r + q.r && Math.abs(p.y - q.y) < p.r + q.r) {
+      p.dead = q.dead = 1; ev(G, 'clash', (p.x + q.x) / 2, p.y, 0);
+    }
+  }
+  if (live) for (const p of G.P) {
+    if (p.dead) continue;
+    const D = G.F[1 - p.o], hb = hurt(D);
+    if (hb && p.x + p.r > hb.x0 && p.x - p.r < hb.x1 && p.y + p.r > hb.y0 && p.y - p.r < hb.y1) {
+      applyHit(G, G.F[p.o], D, p.M, 0, { x0: p.x - p.r, x1: p.x + p.r, y0: p.y - p.r, y1: p.y + p.r }, p.vx > 0 ? 1 : -1, true);
+      p.dead = 1;
+    }
+  }
+  G.P = G.P.filter(p => !p.dead && p.life > 0 && p.x > -60 && p.x < W + 60);
+}
+
+function pushApart(G) {
+  const [A, B] = G.F;
+  const lying = s => s === 'down' || s === 'ko' || s === 'rise' || s === 'grabbed' || s === 'air';
+  if (lying(A.st) || lying(B.st) || A.st === 'slam' || B.st === 'slam') return;
+  if (Math.abs(A.y - B.y) > 100) return;
+  const minD = 48, dx = B.x - A.x;
+  if (Math.abs(dx) >= minD) return;
+  const s = dx === 0 ? (A.face > 0 ? 1 : -1) : Math.sign(dx);
+  const push = (minD - Math.abs(dx)) / 2;
+  A.x -= s * push; B.x += s * push;
+  if (A.x < XMIN) { B.x += XMIN - A.x; A.x = XMIN; }
+  if (A.x > XMAX) { B.x -= A.x - XMAX; A.x = XMAX; }
+  if (B.x < XMIN) { A.x += XMIN - B.x; B.x = XMIN; }
+  if (B.x > XMAX) { A.x -= B.x - XMAX; B.x = XMAX; }
+}
+
+function endRound(G) {
+  let w;
+  if (G.phase === 'ko') w = G.koWinner;
+  else {
+    const a = G.F[0].hp / G.F[0].prm.maxHp, b = G.F[1].hp / G.F[1].prm.maxHp;
+    w = Math.abs(a - b) < 0.001 ? -1 : a > b ? 0 : 1;
+  }
+  if (w >= 0) G.F[w].wins++; else { G.F[0].wins++; G.F[1].wins++; }
+  const done = G.F.some(f => f.wins >= 2) || G.round >= 5;
+  if (done) {
+    G.phase = 'end'; G.pt = 0;
+    const a = G.F[0].wins, b = G.F[1].wins;
+    G.winner = a === b ? -1 : a > b ? 0 : 1;
+    if (G.winner >= 0) announce(G, 'win', G.winner); else announce(G, 'draw');
+  } else {
+    G.round++;
+    resetRound(G);
+  }
+}
+
+/* ---------- network snapshot ---------- */
+function encodeSnap(G) {
+  return {
+    f: G.frame, ph: PH.indexOf(G.phase), pt: G.pt, rd: G.round, tm: Math.ceil(G.timer / 60), wn: G.winner,
+    an: [ANN_K.indexOf(G.ann.k), G.ann.n, Math.min(999, G.frame - G.ann.t)],
+    F: G.F.map(F => [r1(F.x), r1(F.y), F.face, ST_L.indexOf(F.st), Math.min(F.t, 9999), MV_L.indexOf(F.mv), r1(F.hp), Math.round(F.meter), F.inv > 0 ? 1 : 0, F.combo, Math.min(F.comboT, 99), F.wins, r1(F.vy), F.maxCombo]),
+    P: G.P.map(p => [r1(p.x), r1(p.y), p.vx > 0 ? 1 : -1, p.o]),
+    E: G.E.slice(-10).map(e => [e.id, EV_T.indexOf(e.ty), r1(e.x), r1(e.y), e.a]),
+  };
+}
+function applySnap(G, s) {
+  if (!s || typeof s !== 'object' || !Array.isArray(s.F) || s.F.length !== 2) return;
+  G.frame = num(s.f); G.phase = PH[s.ph] || 'fight'; G.pt = num(s.pt); G.round = clamp(num(s.rd), 1, 9);
+  G.timer = clamp(num(s.tm), 0, 99) * 60; G.winner = s.wn === 0 || s.wn === 1 ? s.wn : -1;
+  G.F.forEach((F, i) => {
+    const a = s.F[i];
+    if (!Array.isArray(a)) return;
+    F.x = clamp(num(a[0]), 0, W); F.y = clamp(num(a[1]), -10, 600); F.face = a[2] < 0 ? -1 : 1;
+    F.st = ST_L[a[3]] || 'idle'; F.t = clamp(num(a[4]), 0, 9999); F.mv = MV_L[a[5]] || null;
+    if (F.st === 'atk' && !F.mv) F.st = 'idle';
+    F.hp = clamp(num(a[6]), 0, F.prm.maxHp); F.meter = clamp(num(a[7]), 0, 100); F.inv = a[8] ? 1 : 0;
+    F.combo = clamp(num(a[9]), 0, 99); F.comboT = clamp(num(a[10]), 0, 99); F.wins = clamp(num(a[11]), 0, 5);
+    F.vy = num(a[12]); F.maxCombo = clamp(num(a[13]), 0, 99); F.tAdv = 0;
+  });
+  G.P = (Array.isArray(s.P) ? s.P : []).slice(0, 6).filter(Array.isArray)
+    .map((p, j) => ({ id: j, x: num(p[0]), y: num(p[1]), vx: p[2] < 0 ? -1 : 1, o: p[3] ? 1 : 0, r: 20 }));
+  if (Array.isArray(s.an)) G.ann = { k: ANN_K[s.an[0]] || 'round', n: clamp(num(s.an[1]), 0, 9), t: G.frame - clamp(num(s.an[2]), 0, 999) };
+  const evs = (Array.isArray(s.E) ? s.E : []).filter(Array.isArray);
+  if (!App.gotSnap) { App.gotSnap = true; V.lastEid = evs.reduce((m, e) => Math.max(m, num(e[0])), 0); return; }
+  for (const e of evs) {
+    const id = num(e[0]);
+    if (id <= V.lastEid) continue;
+    V.lastEid = id;
+    const ty = EV_T[e[1]];
+    if (ty) fx({ ty, x: num(e[2]), y: num(e[3]), a: num(e[4]) });
+  }
+}
+
+/* =========================================================
+   CPU opponent
+   ========================================================= */
+const CPU_LV = {
+  easy:   { name: '쉬움',   react: 24, guard: 0.18, aggr: 0.35, sp: 0.25, aa: 0.12, punish: 0.12, idle: 0.30, think: 22 },
+  normal: { name: '보통',   react: 14, guard: 0.45, aggr: 0.55, sp: 0.5,  aa: 0.4,  punish: 0.45, idle: 0.12, think: 12 },
+  hard:   { name: '어려움', react: 8,  guard: 0.72, aggr: 0.7,  sp: 0.8,  aa: 0.75, punish: 0.8,  idle: 0.03, think: 6 },
+};
+class Cpu {
+  constructor(lv) { this.L = CPU_LV[lv] || CPU_LV.normal; this.plan = []; this.wait = 30; this.seenAtk = -1; this.reactAt = 0; this.punishFor = -1; this.seenProj = new Set(); this.seenJump = 0; }
+  sample(G, me, op) {
+    const o = { l: 0, r: 0, u: 0, g: 0, p: 0, k: 0, s: 0 }, L = this.L;
+    if (G.phase !== 'fight') { this.plan = []; this.wait = rint(5, 20); return o; }
+    const dx = op.x - me.x, dist = Math.abs(dx), fw = dx >= 0 ? 'r' : 'l', bw = dx >= 0 ? 'l' : 'r';
+    const free = !!ACTIONABLE[me.st];
+    if (op.st === 'atk' && op.mvStart !== this.seenAtk) {
+      this.seenAtk = op.mvStart;
+      this.reactAt = G.frame + L.react + rint(0, 4);
+      this.punishFor = Math.random() < L.punish ? op.mvStart : -1;
+    }
+    if (this.reactAt && G.frame >= this.reactAt) {
+      this.reactAt = 0;
+      if (free && op.st === 'atk' && dist < 200 && Math.random() < L.guard) this.plan = [{ n: rint(12, 22), g: 1 }];
+    }
+    for (const p of G.P) {
+      if (p.o === me.idx || this.seenProj.has(p.id)) continue;
+      if (Math.abs(p.x - me.x) < 260 && Math.sign(me.x - p.x) === Math.sign(p.vx)) {
+        this.seenProj.add(p.id);
+        if (free && Math.random() < L.guard + 0.1) this.plan = Math.random() < 0.5 ? [{ n: 1, u: 1, f: 1 }, { n: 30 }] : [{ n: 30, g: 1 }];
+      }
+    }
+    if (op.jumps !== this.seenJump) {
+      this.seenJump = op.jumps;
+      if (free && dist < 240 && Math.random() < L.aa) {
+        if (me.def.style === 'boxer' && me.meter >= SP_COST) this.plan = [{ n: rint(9, 14) }, { n: 1, s: 1 }, { n: 10 }];
+        else this.plan = Math.random() < 0.6 ? [{ n: rint(12, 18) }, { n: 1, k: 1 }, { n: 12 }] : [{ n: 30, g: 1 }];
+      }
+    }
+    if (free && this.punishFor === op.mvStart && op.st === 'atk' && op.mv && dist < 115) {
+      const M = op.prm.moves[op.mv];
+      if (op.t > M.su + M.ac && M.su + M.ac + M.rc - op.t > 4) {
+        this.punishFor = -1;
+        this.plan = [{ n: 1, p: 1 }, { n: 6 }, { n: 1, p: 1 }, { n: 7 }, { n: 1, p: 1 }, { n: 10 }];
+        if (me.meter >= SP_COST && Math.random() < L.sp) this.plan.splice(4, 2, { n: 1, s: 1 }, { n: 10 });
+      }
+    }
+    if (this.plan.length) {
+      const s = this.plan[0];
+      if (s.g) o.g = 1;
+      if (s.f) o[fw] = 1;
+      if (s.b) o[bw] = 1;
+      if (s.u) o.u = 1;
+      if (s.p) o.p = 1;
+      if (s.k) o.k = 1;
+      if (s.s) o.s = 1;
+      if (--s.n <= 0) this.plan.shift();
+      return o;
+    }
+    if (!free) return o;
+    if (--this.wait > 0) return o;
+    this.wait = L.think + rint(0, L.think);
+    this.decide(G, me, op, dist);
+    return o;
+  }
+  decide(G, me, op, dist) {
+    const L = this.L, R = Math.random, canSp = me.meter >= SP_COST, st = me.def.style;
+    if (R() < L.idle) { this.plan = [{ n: rint(8, 24) }]; return; }
+    if (op.st === 'down' || op.st === 'rise') { this.plan = [{ n: rint(8, 16), f: dist > 90 ? 1 : 0, g: dist <= 90 ? 1 : 0 }]; return; }
+    if (canSp && R() < L.sp) {
+      if (st === 'kungfu' && dist > 180 && !G.P.some(p => p.o === me.idx)) { this.plan = [{ n: 1, s: 1 }, { n: 20 }]; return; }
+      if (st === 'wrestler' && dist < 84) { this.plan = [{ n: 1, s: 1 }, { n: 10 }]; return; }
+      if (st === 'tkd' && dist < 190 && dist > 60) { this.plan = [{ n: 1, s: 1 }, { n: 10 }]; return; }
+      if (st === 'ninja' && dist < 320 && dist > 90) { this.plan = [{ n: 1, s: 1 }, { n: 10 }]; return; }
+    }
+    if (dist > 210) {
+      if (R() < L.aggr * 0.25) { this.plan = [{ n: 1, u: 1, f: 1 }, { n: rint(12, 18), f: 1 }, { n: 1, k: 1 }, { n: 24 }]; return; }
+      this.plan = [{ n: rint(10, 26), f: 1 }]; return;
+    }
+    if (dist > 105) {
+      if (R() < L.aggr * 0.6) { this.plan = R() < 0.5 ? [{ n: rint(4, 10), f: 1 }, { n: 1, k: 1 }, { n: 18 }] : [{ n: rint(10, 18), f: 1 }]; return; }
+      if (R() < 0.3) { this.plan = [{ n: rint(8, 16), b: 1 }]; return; }
+      this.plan = [{ n: rint(6, 14), f: 1 }]; return;
+    }
+    if (R() < L.aggr) {
+      const r = R();
+      if (r < 0.5) {
+        this.plan = [{ n: 1, p: 1 }, { n: 7 }, { n: 1, p: 1 }, { n: 8 }, { n: 1, p: 1 }, { n: 14 }];
+        if (canSp && R() < L.sp * 0.6) this.plan.splice(4, 2, { n: 1, s: 1 }, { n: 14 });
+      } else if (r < 0.82) {
+        this.plan = canSp && R() < L.sp * 0.5 ? [{ n: 1, k: 1 }, { n: 12 }, { n: 1, s: 1 }, { n: 14 }] : [{ n: 1, k: 1 }, { n: 20 }];
+      } else this.plan = [{ n: 1, u: 1, b: R() < 0.5 ? 1 : 0 }, { n: 30 }];
+      return;
+    }
+    this.plan = R() < 0.6 ? [{ n: rint(14, 28), g: 1 }] : [{ n: rint(10, 18), b: 1 }];
+  }
+}
+
+/* =========================================================
+   input
+   ========================================================= */
+class LocalInput {
+  constructor() { this.src = { l: new Set(), r: new Set(), u: new Set(), g: new Set() }; this.cnt = { p: 0, k: 0, s: 0 }; this.last = { p: 0, k: 0, s: 0 }; }
+  press(k, id) { if (k in this.cnt) this.cnt[k]++; else if (this.src[k]) this.src[k].add(id); }
+  release(k, id) { if (this.src[k]) this.src[k].delete(id); }
+  releaseAll() { for (const k in this.src) this.src[k].clear(); }
+  held(k) { return this.src[k].size > 0 ? 1 : 0; }
+  sample() {
+    const o = { l: this.held('l'), r: this.held('r'), u: this.held('u'), g: this.held('g') };
+    for (const k of ['p', 'k', 's']) { o[k] = this.cnt[k] !== this.last[k] ? 1 : 0; this.last[k] = this.cnt[k]; }
+    return o;
+  }
+  netState() { return [this.held('l') | (this.held('r') << 1) | (this.held('u') << 2) | (this.held('g') << 3), this.cnt.p, this.cnt.k, this.cnt.s]; }
+  reset() { this.releaseAll(); this.last = Object.assign({}, this.cnt); }
+}
+class RemoteInput {
+  constructor() { this.reset(); }
+  reset() { this.st = [0, 0, 0, 0]; this.last = null; }
+  set(i) {
+    if (!Array.isArray(i) || i.length !== 4 || !i.every(v => Number.isInteger(v))) return;
+    this.st = i;
+    if (!this.last) this.last = [i[1], i[2], i[3]];
+  }
+  sample() {
+    const b = this.st[0], o = { l: b & 1, r: (b >> 1) & 1, u: (b >> 2) & 1, g: (b >> 3) & 1, p: 0, k: 0, s: 0 };
+    if (this.last) { o.p = +(this.st[1] !== this.last[0]); o.k = +(this.st[2] !== this.last[1]); o.s = +(this.st[3] !== this.last[2]); this.last = [this.st[1], this.st[2], this.st[3]]; }
+    return o;
+  }
+}
+
+/* =========================================================
+   sound (synthesized, starts after the first tap)
+   ========================================================= */
+const Sfx = {
+  ctx: null, on: store.get('mf-sound', true), noise: null, master: null,
+  init() {
+    if (!this.on) return;
+    try {
+      if (!this.ctx) {
+        const AC = window.AudioContext || window.webkitAudioContext;
+        if (!AC) return;
+        this.ctx = new AC();
+        const n = this.ctx.createBuffer(1, Math.floor(this.ctx.sampleRate * 0.6), this.ctx.sampleRate);
+        const d = n.getChannelData(0);
+        for (let i = 0; i < d.length; i++) d[i] = Math.random() * 2 - 1;
+        this.noise = n;
+        this.master = this.ctx.createGain(); this.master.gain.value = 0.45; this.master.connect(this.ctx.destination);
+      }
+      if (this.ctx.state === 'suspended') this.ctx.resume();
+    } catch (e) { this.ctx = null; }
+  },
+  osc(t, type, f0, f1, dur, vol) {
+    const c = this.ctx, o = c.createOscillator(), g = c.createGain();
+    o.type = type; o.frequency.setValueAtTime(f0, t); o.frequency.exponentialRampToValueAtTime(Math.max(20, f1), t + dur);
+    g.gain.setValueAtTime(vol, t); g.gain.exponentialRampToValueAtTime(0.001, t + dur);
+    o.connect(g); g.connect(this.master); o.start(t); o.stop(t + dur + 0.02);
+  },
+  nz(t, fc, q, dur, vol, f1) {
+    const c = this.ctx, s = c.createBufferSource(), f = c.createBiquadFilter(), g = c.createGain();
+    s.buffer = this.noise; f.type = 'bandpass'; f.frequency.setValueAtTime(fc, t);
+    if (f1) f.frequency.exponentialRampToValueAtTime(f1, t + dur);
+    f.Q.value = q; g.gain.setValueAtTime(vol, t); g.gain.exponentialRampToValueAtTime(0.001, t + dur);
+    s.connect(f); f.connect(g); g.connect(this.master); s.start(t); s.stop(t + dur + 0.02);
+  },
+  play(k) {
+    if (!this.on || !this.ctx || this.ctx.state !== 'running') return;
+    const t = this.ctx.currentTime;
+    try {
+      switch (k) {
+        case 'hit': this.nz(t, 1800, 1.2, 0.07, 0.5); this.osc(t, 'sine', 180, 60, 0.09, 0.6); break;
+        case 'hhit': this.nz(t, 1100, 0.9, 0.13, 0.7); this.osc(t, 'sine', 140, 40, 0.18, 0.9); break;
+        case 'block': this.osc(t, 'square', 1100, 700, 0.05, 0.16); this.nz(t, 4000, 2, 0.04, 0.25); break;
+        case 'swing': this.nz(t, 900, 1.5, 0.08, 0.1, 2200); break;
+        case 'sp': this.osc(t, 'sawtooth', 220, 880, 0.28, 0.2); this.osc(t, 'sine', 440, 1320, 0.25, 0.16); break;
+        case 'ko': this.osc(t, 'sine', 120, 30, 0.8, 0.9); this.nz(t, 600, 0.7, 0.5, 0.5); break;
+        case 'ann': this.osc(t, 'square', 660, 660, 0.08, 0.12); this.osc(t + 0.1, 'square', 990, 990, 0.12, 0.12); break;
+        case 'grab': this.osc(t, 'triangle', 300, 120, 0.15, 0.4); break;
+        case 'proj': this.osc(t, 'sine', 500, 180, 0.3, 0.25); this.nz(t, 1500, 0.8, 0.25, 0.15, 600); break;
+        case 'ui': this.osc(t, 'triangle', 520, 760, 0.06, 0.12); break;
+        case 'dust': this.nz(t, 300, 0.8, 0.08, 0.12); break;
+      }
+    } catch (e) { /* ignore audio errors */ }
+  },
+};
+
+/* =========================================================
+   drawing: fighters
+   ========================================================= */
+const INK = '#17142b';
+const D2R = Math.PI / 180;
+const dirv = a => [Math.sin(a * D2R), Math.cos(a * D2R)];
+// angles: degrees from straight down, positive = toward facing direction.
+// a*: [shoulder, elbow-bend]  l*: [hip, knee-bend]
+const POSE = {
+  idle:    { lean: 8,   aF: [50, 95],   aB: [28, 112], lF: [22, -20], lB: [-24, -8] },
+  jump:    { lean: 4,   aF: [60, 90],   aB: [40, 100], lF: [70, -110], lB: [20, -100], air: 1 },
+  guard:   { lean: -4,  aF: [36, 140],  aB: [22, 150], lF: [26, -28], lB: [-26, -10], drop: 6 },
+  block:   { lean: -10, aF: [36, 140],  aB: [22, 150], lF: [28, -26], lB: [-32, -8], drop: 6 },
+  windup:  { lean: 2,   aF: [30, 120],  aB: [20, 110], lF: [24, -22], lB: [-26, -8] },
+  jab:     { lean: 14,  aF: [88, 2],    aB: [30, 115], lF: [26, -22], lB: [-28, -6] },
+  cross:   { lean: 20,  aF: [45, 110],  aB: [86, 0],   lF: [30, -26], lB: [-32, -4] },
+  hook:    { lean: 22,  aF: [112, 26],  aB: [30, 110], lF: [34, -28], lB: [-30, -4], dx: 8 },
+  chamber: { lean: -6,  aF: [45, 95],   aB: [-20, 70], lF: [80, -110], lB: [-6, -4] },
+  kick:    { lean: -16, aF: [45, 90],   aB: [-35, 60], lF: [96, 0],   lB: [-6, 0] },
+  hkick:   { lean: -26, aF: [45, 90],   aB: [-40, 60], lF: [118, 0],  lB: [-4, 0] },
+  akick:   { lean: -8,  aF: [70, 80],   aB: [30, 100], lF: [62, 0],   lB: [-6, -110], air: 1 },
+  apunch:  { lean: 16,  aF: [62, 0],    aB: [40, 110], lF: [60, -100], lB: [20, -90], air: 1 },
+  hit:     { lean: -24, aF: [18, 40],   aB: [-28, 50], lF: [16, -18], lB: [-26, -4] },
+  crouch:  { lean: 18,  aF: [45, 100],  aB: [30, 110], lF: [62, -112], lB: [-10, -100] },
+  upper:   { lean: 8,   aF: [165, 8],   aB: [20, 110], lF: [30, -50], lB: [-14, -10] },
+  charge:  { lean: -6,  aF: [30, 120],  aB: [20, 130], lF: [34, -30], lB: [-34, -6] },
+  palm:    { lean: 10,  aF: [90, 0],    aB: [84, 4],   lF: [36, -20], lB: [-36, -4] },
+  grab:    { lean: 26,  aF: [86, 12],   aB: [80, 16],  lF: [30, -30], lB: [-30, -4] },
+  lift:    { lean: -8,  aF: [165, 25],  aB: [160, 30], lF: [24, -14], lB: [-24, -6] },
+  slash:   { lean: 28,  aF: [105, 0],   aB: [-40, 40], lF: [50, -60], lB: [-40, -10] },
+  win:     { lean: 0,   aF: [172, 0],   aB: [30, 120], lF: [10, -4],  lB: [-12, -4] },
+  lie:     { lean: 0,   aF: [30, 20],   aB: [-20, 20], lF: [8, -6],   lB: [-8, -4], lie: 1 },
+};
+function mixPose(a, b, k) {
+  k = clamp(k, 0, 1);
+  const m = (x, y) => [lerp(x[0], y[0], k), lerp(x[1], y[1], k)];
+  return {
+    lean: lerp(a.lean || 0, b.lean || 0, k), aF: m(a.aF, b.aF), aB: m(a.aB, b.aB), lF: m(a.lF, b.lF), lB: m(a.lB, b.lB),
+    dx: lerp(a.dx || 0, b.dx || 0, k), drop: lerp(a.drop || 0, b.drop || 0, k), air: k < 0.5 ? a.air : b.air, lie: k < 0.5 ? a.lie : b.lie,
+  };
+}
+function walkPose(t) {
+  const s = Math.sin(t * 0.32);
+  return { lean: 10, aF: [50 + s * 6, 95], aB: [28 - s * 6, 112], lF: [18 + s * 20, -16 - Math.max(0, -s) * 30], lB: [-18 - s * 20, -10 - Math.max(0, s) * 30] };
+}
+function poseOf(F) {
+  const t = F.t;
+  switch (F.st) {
+    case 'idle': { const p = Object.assign({}, POSE.idle); p.drop = 1.5 + Math.sin(t * 0.09) * 1.5; return { p }; }
+    case 'walk': return { p: walkPose(t) };
+    case 'jump': return { p: POSE.jump };
+    case 'guard': return { p: POSE.guard };
+    case 'block': return { p: POSE.block };
+    case 'hit': return { p: mixPose(POSE.hit, POSE.idle, (t - 6) / 14), mood: 'hurt' };
+    case 'air': return { p: POSE.hit, rot: -F.face * Math.min(1.45, 0.25 + t * 0.07), mood: 'hurt' };
+    case 'down': return { p: POSE.lie, rot: -F.face * Math.PI / 2, mood: F.hp <= 0 ? 'ko' : 'hurt' };
+    case 'ko': return { p: POSE.lie, rot: -F.face * Math.PI / 2, mood: 'ko' };
+    case 'rise': return { p: mixPose(POSE.crouch, POSE.idle, (t - 8) / 8), rot: -F.face * (Math.PI / 2) * (1 - Math.min(1, t / 9)), alpha: t % 4 < 2 ? 0.55 : 1 };
+    case 'grabbed': return { p: POSE.hit, rot: -F.face * 0.5, mood: 'hurt' };
+    case 'slam': return { p: t < 18 ? POSE.lift : mixPose(POSE.grab, POSE.idle, (t - 18) / 20) };
+    case 'win': return { p: mixPose(POSE.idle, POSE.win, t / 12) };
+    case 'atk': {
+      const M = F.prm.moves[F.mv];
+      if (!M) return { p: POSE.idle };
+      const [wind, strike] = M.pose, base = M.air ? POSE.jump : POSE.idle;
+      let p, phase;
+      if (t < M.su) { p = mixPose(base, POSE[wind] || base, wind === 'idle' ? 0 : Math.min(1, (t + 1) / Math.max(1, M.su))); phase = 'su'; }
+      else if (t < M.su + M.ac) { p = POSE[strike]; phase = 'ac'; }
+      else { p = M.lift && F.y > 0 ? mixPose(POSE[strike], POSE.jump, (t - M.su - M.ac) / 10) : mixPose(POSE[strike], base, (t - M.su - M.ac) / Math.max(1, M.rc)); phase = 'rc'; }
+      const r = { p, phase, M };
+      if (M.spin && phase === 'ac') r.face = Math.floor((t - M.su) / 5) % 2 ? -F.face : F.face;
+      if (M.tele && t < M.tele) r.alpha = Math.max(0.12, 1 - t / M.tele);
+      if (M.tele && t >= M.tele && t < M.tele + 3) r.alpha = 0.5;
+      return r;
+    }
+  }
+  return { p: POSE.idle };
+}
+const BUILD_DIM = { slim: { w: 0.82, h: 1, t: 0.84 }, mid: { w: 1, h: 1, t: 1 }, big: { w: 1.3, h: 1.06, t: 1.38 } };
+function dimsOf(build) {
+  const b = BUILD_DIM[build] || BUILD_DIM.mid;
+  return { thigh: 40 * b.h, shin: 40 * b.h, torso: 58 * b.h, ua: 30 * b.h, fa: 28 * b.h, head: 16.5, wA: 12 * b.w, wL: 15 * b.w, wT: 27 * b.t, hand: 7 * Math.max(1, b.w * 0.95) };
+}
+function solve(p, B) {
+  const legDown = l => B.thigh * Math.cos(l[0] * D2R) + B.shin * Math.cos((l[0] + l[1]) * D2R);
+  let hipH = p.lie ? 13 : p.air ? (B.thigh + B.shin) * 0.92 : Math.max(legDown(p.lF), legDown(p.lB)) + 3;
+  hipH -= p.drop || 0;
+  const hip = [p.dx || 0, -hipH];
+  const ls = Math.sin((p.lean || 0) * D2R), lc = Math.cos((p.lean || 0) * D2R);
+  const neck = [hip[0] + ls * B.torso, hip[1] - lc * B.torso];
+  const sh = [hip[0] + ls * B.torso * 0.86, hip[1] - lc * B.torso * 0.86];
+  const head = [neck[0] + ls * (B.head + 3), neck[1] - lc * (B.head + 3)];
+  const limb = (o, a, l1, l2) => {
+    const d1 = dirv(a[0]), d2 = dirv(a[0] + a[1]);
+    const m = [o[0] + d1[0] * l1, o[1] + d1[1] * l1];
+    return { o, m, e: [m[0] + d2[0] * l2, m[1] + d2[1] * l2], ang: a[0] + a[1] };
+  };
+  const shB = [sh[0] - 3, sh[1] + 1], hipB = [hip[0] - 3, hip[1]];
+  return { hip, neck, sh, head, ls, lc, aF: limb(sh, p.aF, B.ua, B.fa), aB: limb(shB, p.aB, B.ua, B.fa), lF: limb(hip, p.lF, B.thigh, B.shin), lB: limb(hipB, p.lB, B.thigh, B.shin) };
+}
+const shadeCache = {};
+function shade(hex, k) {
+  const key = hex + k;
+  if (shadeCache[key]) return shadeCache[key];
+  const n = parseInt(hex.slice(1), 16);
+  const f = v => clamp(Math.round(v * k), 0, 255).toString(16).padStart(2, '0');
+  return (shadeCache[key] = '#' + f(n >> 16) + f((n >> 8) & 255) + f(n & 255));
+}
+function lum(hex) { const n = parseInt(hex.slice(1), 16); return (0.299 * (n >> 16) + 0.587 * ((n >> 8) & 255) + 0.114 * (n & 255)) / 255; }
+function strokeLine(g, pts, w, col) {
+  g.lineWidth = w; g.strokeStyle = col; g.beginPath(); g.moveTo(pts[0][0], pts[0][1]);
+  for (let i = 1; i < pts.length; i++) g.lineTo(pts[i][0], pts[i][1]);
+  g.stroke();
+}
+function disc(g, c, r, col, outline) {
+  if (outline) { g.beginPath(); g.arc(c[0], c[1], r + 2.5, 0, Math.PI * 2); g.fillStyle = INK; g.fill(); }
+  g.beginPath(); g.arc(c[0], c[1], r, 0, Math.PI * 2); g.fillStyle = col; g.fill();
+}
+function drawLimb(g, L, w, c1, c2, endR, endCol, foot, footCol) {
+  strokeLine(g, [L.o, L.m, L.e], w + 5, INK);
+  if (endR) disc(g, L.e, endR + 2.5, INK);
+  let tip = null;
+  if (foot) { const d = dirv(L.ang + 90); tip = [L.e[0] + d[0] * foot, L.e[1] + d[1] * foot]; strokeLine(g, [L.e, tip], w * 0.75 + 5, INK); }
+  strokeLine(g, [L.o, L.m], w, c1);
+  strokeLine(g, [L.m, L.e], w, c2);
+  if (tip) strokeLine(g, [L.e, tip], w * 0.75, footCol);
+  if (endR) disc(g, L.e, endR, endCol);
+}
+function drawHead(g, F, J, B, look, style, mood, k) {
+  const hx = J.head[0], hy = J.head[1], r = B.head, skin = k.skin, hc = look.hairColor;
+  const t = F.t || 0, band = style === 'tkd' || style === 'kungfu' || style === 'ninja';
+  if (look.hair === 'pony') {
+    const sw = Math.sin(t * 0.15) * 3;
+    g.beginPath(); g.moveTo(hx - r * 0.6, hy - r * 0.55); g.quadraticCurveTo(hx - r * 1.6, hy - r * 0.6, hx - r * 1.9, hy + r * 0.3 + sw);
+    g.lineWidth = 14; g.strokeStyle = INK; g.stroke(); g.lineWidth = 9; g.strokeStyle = hc; g.stroke();
+  }
+  if (band) {
+    const f1 = Math.sin(t * 0.3) * 4, f2 = Math.cos(t * 0.27) * 4;
+    const base = [hx - r * 0.85, hy - r * 0.4];
+    strokeLine(g, [base, [hx - r * 2.3, hy - r * 0.2 + f1]], 9, INK);
+    strokeLine(g, [base, [hx - r * 2.0, hy + r * 0.45 + f2]], 9, INK);
+    strokeLine(g, [base, [hx - r * 2.3, hy - r * 0.2 + f1]], 4.5, k.accent);
+    strokeLine(g, [base, [hx - r * 2.0, hy + r * 0.45 + f2]], 4.5, k.accent);
+  }
+  disc(g, [hx, hy], r, skin, true);
+  g.save();
+  g.beginPath(); g.arc(hx, hy, r, 0, Math.PI * 2); g.clip();
+  if (style === 'ninja') { g.fillStyle = k.body; g.fillRect(hx - r - 2, hy + r * 0.08, r * 2 + 4, r * 1.2); }
+  if (band) { g.fillStyle = k.accent; g.fillRect(hx - r - 2, hy - r * 0.62, r * 2 + 4, r * 0.36); }
+  g.restore();
+  // hair
+  g.lineWidth = 2.5; g.strokeStyle = INK; g.fillStyle = hc;
+  const cap = () => {
+    g.beginPath(); g.arc(hx, hy, r + 1.5, Math.PI * 0.8, Math.PI * 1.93);
+    g.quadraticCurveTo(hx + r * 0.15, hy - r * 0.5, hx - r * 0.35, hy - r * 0.1);
+    g.quadraticCurveTo(hx - r * 0.6, hy + r * 0.3, hx + Math.cos(Math.PI * 0.8) * (r + 1.5), hy + Math.sin(Math.PI * 0.8) * (r + 1.5));
+    g.closePath(); g.fill(); g.stroke();
+  };
+  const spikes = (from, to, n, len, sweep) => {
+    for (let i = 0; i < n; i++) {
+      const a = from + (to - from) * (i / Math.max(1, n - 1));
+      const b1 = [hx + Math.cos(a - 0.17) * r, hy + Math.sin(a - 0.17) * r], b2 = [hx + Math.cos(a + 0.17) * r, hy + Math.sin(a + 0.17) * r];
+      const tp = [hx + Math.cos(a - sweep) * r * len, hy + Math.sin(a - sweep) * r * len];
+      g.beginPath(); g.moveTo(b1[0], b1[1]); g.lineTo(tp[0], tp[1]); g.lineTo(b2[0], b2[1]); g.closePath(); g.fill(); g.stroke();
+    }
+  };
+  switch (look.hair) {
+    case 'short': cap(); break;
+    case 'pony': cap(); break;
+    case 'spike': spikes(Math.PI * 1.0, Math.PI * 1.75, 4, 1.65, 0.25); cap(); break;
+    case 'mohawk': spikes(Math.PI * 1.12, Math.PI * 1.82, 5, 1.6, 0.12); break;
+    case 'bald': g.beginPath(); g.arc(hx + r * 0.1, hy - r * 0.15, r * 0.6, Math.PI * 1.25, Math.PI * 1.6); g.lineWidth = 3; g.strokeStyle = 'rgba(255,255,255,.55)'; g.stroke(); break;
+  }
+  // face
+  const ex = hx + r * 0.45, ey = hy - r * 0.08;
+  g.strokeStyle = INK; g.fillStyle = INK; g.lineWidth = 2.2;
+  if (mood === 'ko') {
+    g.beginPath(); g.moveTo(ex - 3, ey - 3); g.lineTo(ex + 3, ey + 3); g.moveTo(ex + 3, ey - 3); g.lineTo(ex - 3, ey + 3); g.stroke();
+  } else if (mood === 'hurt') {
+    g.beginPath(); g.moveTo(ex - 3, ey - 2.5); g.lineTo(ex + 2, ey); g.lineTo(ex - 3, ey + 2.5); g.stroke();
+  } else {
+    g.beginPath(); g.ellipse(ex, ey, 2.2, 3.2, 0, 0, Math.PI * 2); g.fill();
+    g.beginPath(); g.moveTo(hx + r * 0.18, hy - r * 0.42); g.lineTo(hx + r * 0.72, hy - r * 0.3); g.stroke();
+  }
+  if (style !== 'ninja') { g.beginPath(); g.moveTo(hx + r * 0.45, hy + r * 0.48); g.lineTo(hx + r * 0.72, hy + r * 0.44); g.stroke(); }
+}
+function drawFighter(g, F, opt) {
+  opt = opt || {};
+  const look = F.def.look, style = F.def.style, B = dimsOf(look.build);
+  const po = poseOf(F), p = po.p, face = po.face || F.face;
+  const J = solve(p, B);
+  const sx = F.rx != null ? F.rx : F.x, sy = GY - (F.ry != null ? F.ry : F.y);
+  const skin = SKINS[look.skin], body = look.body, acc = look.accent;
+  const k = { skin, body, accent: acc };
+  const top = look.outfit === 'bare' ? skin : body;
+  const uArm = look.outfit === 'gi' ? body : skin;
+  const shinC = look.outfit === 'bare' ? skin : body;
+  const footC = style === 'boxer' || style === 'wrestler' || style === 'ninja' ? '#2b2836' : skin;
+  const gloves = style === 'boxer';
+  const handR = gloves ? 11 : B.hand, handC = gloves ? acc : skin;
+  const dk = c => shade(c, 0.78);
+  g.save();
+  g.translate(sx, sy);
+  if (po.alpha != null) g.globalAlpha *= po.alpha;
+  if (F.inv > 0 && F.st === 'idle' && (F.t % 4) < 2) g.globalAlpha *= 0.6;
+  if (po.rot) { g.translate(J.hip[0] * face, J.hip[1]); g.rotate(po.rot); g.translate(-J.hip[0] * face, -J.hip[1]); }
+  g.scale(face, 1);
+  g.lineCap = 'round'; g.lineJoin = 'round';
+  // spin trail
+  if (po.M && po.M.spin && po.phase === 'ac') {
+    g.save(); g.globalAlpha *= 0.35; g.strokeStyle = acc; g.lineWidth = 8;
+    g.beginPath(); g.ellipse(0, -100, 70, 22, 0, 0, Math.PI * 2); g.stroke(); g.restore();
+  }
+  // back limbs
+  drawLimb(g, J.aB, B.wA, dk(uArm), dk(skin), handR, dk(handC));
+  drawLimb(g, J.lB, B.wL, dk(body), dk(shinC), 0, null, 10, dk(footC));
+  // torso
+  strokeLine(g, [J.hip, J.neck], B.wT + 5, INK);
+  strokeLine(g, [J.hip, J.neck], B.wT, top);
+  if (look.outfit === 'gi') {
+    g.lineWidth = 2; g.strokeStyle = shade(body, 0.6);
+    g.beginPath(); g.moveTo(J.neck[0] + J.lc * 3, J.neck[1] + J.ls * 3); g.lineTo(J.hip[0] + J.ls * 10 + J.lc * 6, J.hip[1] - J.lc * 10 + J.ls * 6); g.stroke();
+  }
+  if (look.outfit !== 'gi') disc(g, J.neck, B.wT * 0.28, skin);
+  // belt / waistband
+  const bc = [J.hip[0] + J.ls * 6, J.hip[1] - J.lc * 6], hw = B.wT / 2 + 1;
+  strokeLine(g, [[bc[0] - J.lc * hw, bc[1] - J.ls * hw], [bc[0] + J.lc * hw, bc[1] + J.ls * hw]], 7, acc);
+  if (look.outfit === 'gi') { strokeLine(g, [[bc[0] + J.lc * 4, bc[1] + J.ls * 4], [bc[0] + J.lc * 9, bc[1] + 13]], 4, acc); }
+  // front leg, head, front arm
+  drawLimb(g, J.lF, B.wL, body, shinC, 0, null, 10, footC);
+  drawHead(g, F, J, B, look, style, po.mood, k);
+  drawLimb(g, J.aF, B.wA, uArm, skin, handR, handC);
+  if (style === 'wrestler') disc(g, J.aF.m, B.wA * 0.5, acc);
+  // special extras
+  if (po.M && po.M === F.prm.moves.sp) {
+    const M = po.M, t = F.t;
+    if (style === 'kungfu' && t < M.su + 4) {
+      const c = [(J.aF.e[0] + J.aB.e[0]) / 2 + 6, (J.aF.e[1] + J.aB.e[1]) / 2];
+      const rr = 6 + Math.min(t, M.su) * 1.4;
+      const gr = g.createRadialGradient(c[0], c[1], 0, c[0], c[1], rr);
+      gr.addColorStop(0, '#ffffff'); gr.addColorStop(0.4, lum(acc) < 0.35 ? '#7ce8ff' : acc); gr.addColorStop(1, 'rgba(255,255,255,0)');
+      g.fillStyle = gr; g.beginPath(); g.arc(c[0], c[1], rr, 0, Math.PI * 2); g.fill();
+    }
+    if (style === 'ninja' && t >= M.tele) {
+      const d = dirv(J.aF.ang), b0 = J.aF.e, b1 = [b0[0] + d[0] * 48, b0[1] + d[1] * 48];
+      strokeLine(g, [b0, b1], 9, INK); strokeLine(g, [b0, b1], 4, '#e9eef5');
+      if (po.phase === 'ac') { g.save(); g.globalAlpha *= 0.5; g.strokeStyle = '#e9eef5'; g.lineWidth = 5; g.beginPath(); g.arc(J.sh[0], J.sh[1], 70, -0.9, 0.9); g.stroke(); g.restore(); }
+    }
+    if (style === 'boxer' && po.phase === 'ac') {
+      g.save(); g.globalAlpha *= 0.45; g.strokeStyle = acc; g.lineWidth = 10; g.beginPath(); g.arc(J.sh[0] - 10, J.sh[1] + 10, 62, -2.2, -0.9); g.stroke(); g.restore();
+    }
+  }
+  g.restore();
+}
+function drawShadow(g, F) {
+  const x = F.rx != null ? F.rx : F.x, y = F.ry != null ? F.ry : F.y;
+  const s = clamp(1 - y / 320, 0.35, 1);
+  g.fillStyle = 'rgba(0,0,0,.32)';
+  g.beginPath(); g.ellipse(x, GY + 3, 42 * s, 9 * s, 0, 0, Math.PI * 2); g.fill();
+}
+function drawProj(g, p, F) {
+  const acc = F ? F.def.look.accent : '#7ce8ff', c = lum(acc) < 0.35 ? '#7ce8ff' : acc;
+  const x = p.x, y = GY - p.y, d = p.vx > 0 ? 1 : -1;
+  for (let i = 3; i >= 1; i--) {
+    g.globalAlpha = 0.18 * (4 - i);
+    g.fillStyle = c; g.beginPath(); g.arc(x - d * i * 14, y, 20 - i * 3, 0, Math.PI * 2); g.fill();
+  }
+  g.globalAlpha = 1;
+  const gr = g.createRadialGradient(x, y, 0, x, y, 30);
+  gr.addColorStop(0, '#ffffff'); gr.addColorStop(0.35, c); gr.addColorStop(1, 'rgba(255,255,255,0)');
+  g.fillStyle = gr; g.beginPath(); g.arc(x, y, 30, 0, Math.PI * 2); g.fill();
+}
+
+/* =========================================================
+   drawing: stages
+   ========================================================= */
+const STAGES = { dojo: '도장', roof: '노을 옥상', ring: '챔피언 링' };
+const STAGE_KEYS = Object.keys(STAGES);
+const stageCache = {};
+function srand(seed) { let s = seed >>> 0; return () => ((s = (s * 1664525 + 1013904223) >>> 0) / 4294967296); }
+const PAINT = {
+  dojo(g) {
+    const R = srand(7);
+    let gr = g.createLinearGradient(0, 0, 0, 400); gr.addColorStop(0, '#3b2418'); gr.addColorStop(1, '#5c3a26');
+    g.fillStyle = gr; g.fillRect(0, 0, W, 400);
+    for (let i = 0; i < 6; i++) {
+      const x = 22 + i * 156;
+      const pg = g.createLinearGradient(0, 70, 0, 360); pg.addColorStop(0, '#f2e6c9'); pg.addColorStop(1, '#dccaa2');
+      g.fillStyle = pg; g.fillRect(x, 72, 138, 288);
+      g.strokeStyle = '#7a5636'; g.lineWidth = 3;
+      for (let gx = 1; gx < 4; gx++) { g.beginPath(); g.moveTo(x + gx * 34.5, 72); g.lineTo(x + gx * 34.5, 360); g.stroke(); }
+      for (let gy = 1; gy < 6; gy++) { g.beginPath(); g.moveTo(x, 72 + gy * 48); g.lineTo(x + 138, 72 + gy * 48); g.stroke(); }
+      g.lineWidth = 6; g.strokeRect(x, 72, 138, 288);
+    }
+    g.fillStyle = '#2a170f'; g.fillRect(0, 50, W, 24); g.fillRect(0, 356, W, 24);
+    // scroll
+    g.fillStyle = 'rgba(0,0,0,.25)'; g.fillRect(372, 96, 78, 214);
+    g.fillStyle = '#f6eed8'; g.fillRect(366, 90, 78, 214);
+    g.fillStyle = '#2a170f'; g.fillRect(358, 84, 94, 10); g.fillRect(358, 300, 94, 10);
+    g.fillStyle = '#1d1410'; g.font = '46px "Black Han Sans", sans-serif'; g.textAlign = 'center'; g.textBaseline = 'middle';
+    g.fillText('투', 405, 150); g.fillText('혼', 405, 210);
+    g.fillStyle = '#c4362c'; g.fillRect(420, 252, 18, 18);
+    // floor
+    gr = g.createLinearGradient(0, 380, 0, 540); gr.addColorStop(0, '#a3713f'); gr.addColorStop(1, '#6e4527');
+    g.fillStyle = gr; g.fillRect(0, 380, W, 160);
+    let y = 388, s = 9;
+    while (y < 540) {
+      g.strokeStyle = 'rgba(40,20,10,.28)'; g.lineWidth = 2; g.beginPath(); g.moveTo(0, y); g.lineTo(W, y); g.stroke();
+      const off = R() * 200;
+      for (let x = off; x < W; x += 180 + s * 6) { g.beginPath(); g.moveTo(x, y); g.lineTo(x, y + s); g.stroke(); }
+      y += s; s *= 1.22;
+    }
+    gr = g.createLinearGradient(0, 380, 0, 460); gr.addColorStop(0, 'rgba(255,230,190,.18)'); gr.addColorStop(1, 'rgba(255,230,190,0)');
+    g.fillStyle = gr; g.fillRect(0, 380, W, 80);
+  },
+  roof(g) {
+    const R = srand(21);
+    let gr = g.createLinearGradient(0, 0, 0, 420);
+    gr.addColorStop(0, '#231a4f'); gr.addColorStop(0.45, '#6b2f74'); gr.addColorStop(0.75, '#e2586a'); gr.addColorStop(1, '#ffb361');
+    g.fillStyle = gr; g.fillRect(0, 0, W, 420);
+    const sg = g.createRadialGradient(700, 330, 10, 700, 330, 140);
+    sg.addColorStop(0, 'rgba(255,240,190,1)'); sg.addColorStop(0.35, 'rgba(255,200,110,.9)'); sg.addColorStop(1, 'rgba(255,170,90,0)');
+    g.fillStyle = sg; g.beginPath(); g.arc(700, 330, 140, 0, Math.PI * 2); g.fill();
+    g.fillStyle = 'rgba(255,170,140,.35)';
+    for (let i = 0; i < 5; i++) { g.beginPath(); g.ellipse(R() * W, 80 + R() * 160, 80 + R() * 90, 7 + R() * 6, 0, 0, Math.PI * 2); g.fill(); }
+    let x = 0;
+    g.fillStyle = '#4a2a66';
+    while (x < W) { const w = 40 + R() * 70, h = 120 + R() * 150; g.fillRect(x, 420 - h, w, h); x += w + 4; }
+    x = -10;
+    while (x < W) {
+      const w = 60 + R() * 90, h = 70 + R() * 140;
+      g.fillStyle = '#2b1a45'; g.fillRect(x, 420 - h, w, h);
+      for (let wy = 420 - h + 12; wy < 405; wy += 16) for (let wx = x + 8; wx < x + w - 10; wx += 14) {
+        if (R() < 0.33) { g.fillStyle = R() < 0.5 ? 'rgba(255,214,122,.85)' : 'rgba(255,170,100,.6)'; g.fillRect(wx, wy, 6, 8); }
+      }
+      x += w + 6;
+    }
+    // water tank
+    g.fillStyle = '#1c1528';
+    g.fillRect(52, 330, 6, 75); g.fillRect(128, 330, 6, 75);
+    g.beginPath(); g.ellipse(93, 255, 52, 12, 0, 0, Math.PI * 2); g.fill();
+    g.fillRect(41, 255, 104, 80);
+    gr = g.createLinearGradient(0, 400, 0, 540); gr.addColorStop(0, '#4f4559'); gr.addColorStop(1, '#2c2536');
+    g.fillStyle = gr; g.fillRect(0, 400, W, 140);
+    g.strokeStyle = 'rgba(0,0,0,.25)'; g.lineWidth = 2;
+    for (let yy = 420; yy < 540; yy += 26) { g.beginPath(); g.moveTo(0, yy); g.lineTo(W, yy); g.stroke(); }
+    g.fillStyle = '#1c1528'; g.fillRect(0, 372, W, 6); g.fillRect(0, 392, W, 4);
+    for (let px = 10; px < W; px += 46) g.fillRect(px, 372, 5, 30);
+  },
+  ring(g) {
+    const R = srand(33);
+    g.fillStyle = '#0e0c1d'; g.fillRect(0, 0, W, H);
+    for (const cx of [180, 480, 780]) {
+      const sg = g.createLinearGradient(0, 0, 0, 420); sg.addColorStop(0, 'rgba(255,255,240,.16)'); sg.addColorStop(1, 'rgba(255,255,240,0)');
+      g.fillStyle = sg; g.beginPath(); g.moveTo(cx - 20, 0); g.lineTo(cx + 20, 0); g.lineTo(cx + 150, 420); g.lineTo(cx - 150, 420); g.closePath(); g.fill();
+    }
+    for (let row = 0; row < 4; row++) {
+      const yy = 250 + row * 34;
+      for (let x = (row % 2) * 11; x < W; x += 22) {
+        g.fillStyle = row % 2 ? '#211e3c' : '#29254a';
+        g.beginPath(); g.arc(x, yy, 9 + R() * 2, 0, Math.PI * 2); g.fill();
+        g.beginPath(); g.ellipse(x, yy + 20, 14, 10, 0, 0, Math.PI * 2); g.fill();
+        if (R() < 0.04) { g.fillStyle = 'rgba(255,255,255,.85)'; g.fillRect(x - 2, yy - 2, 4, 4); }
+      }
+    }
+    let gr = g.createLinearGradient(0, 380, 0, 540); gr.addColorStop(0, '#2b5fb4'); gr.addColorStop(1, '#183d7c');
+    g.fillStyle = gr; g.fillRect(0, 380, W, 160);
+    g.save(); g.globalAlpha = 0.12; g.fillStyle = '#ffffff'; g.font = 'italic 64px "Black Han Sans", sans-serif'; g.textAlign = 'center'; g.textBaseline = 'middle';
+    g.fillText('MAKING FIGHT', 480, 500); g.restore();
+    g.fillStyle = '#c8323c'; g.fillRect(0, 524, W, 16);
+    g.fillStyle = '#c9ccd8'; g.fillRect(4, 270, 16, 200); g.fillRect(W - 20, 270, 16, 200);
+    [['#ece8f2', 296], ['#d33b4a', 330], ['#3b6fd8', 364]].forEach(([c, yy]) => {
+      g.fillStyle = 'rgba(0,0,0,.35)'; g.fillRect(0, yy + 3, W, 5); g.fillStyle = c; g.fillRect(0, yy, W, 5);
+    });
+  },
+};
+function stageCanvas(key, sc) {
+  const id = key + '@' + sc;
+  if (stageCache[id]) return stageCache[id];
+  const c = document.createElement('canvas'); c.width = W * sc; c.height = H * sc;
+  const g = c.getContext('2d'); g.scale(sc, sc); (PAINT[key] || PAINT.dojo)(g);
+  return (stageCache[id] = c);
+}
+
+/* =========================================================
+   effects + HUD
+   ========================================================= */
+const V = { parts: [], shake: 0, flash: 0, trail: [0, 0], lastEid: 0 };
+function sparks(x, y, n, col, spd) {
+  for (let i = 0; i < n; i++) { const a = Math.random() * Math.PI * 2, v = rnd(spd * 0.5, spd); V.parts.push({ k: 's', x, y, vx: Math.cos(a) * v, vy: Math.sin(a) * v, life: rint(9, 15), max: 15, col, w: rnd(2, 4) }); }
+}
+function fx(e) {
+  const x = e.x, y = GY - e.y;
+  switch (e.ty) {
+    case 'hit': sparks(x, y, 8, '#ffe27a', 7); V.parts.push({ k: 'r', x, y, r: 6, life: 10, max: 10, col: '#fff3c4' }); Sfx.play('hit'); break;
+    case 'hhit': sparks(x, y, 14, '#ffd04a', 10); V.parts.push({ k: 'r', x, y, r: 10, life: 14, max: 14, col: '#ffffff' }); V.shake = Math.max(V.shake, 7); Sfx.play('hhit'); break;
+    case 'block': sparks(x, y, 6, '#8fd8ff', 6); V.parts.push({ k: 'r', x, y, r: 12, life: 12, max: 12, col: '#8fd8ff' }); Sfx.play('block'); break;
+    case 'sp': V.parts.push({ k: 'r', x, y, r: 20, life: 20, max: 20, col: '#ffc83a' }); V.flash = Math.max(V.flash, 0.22); Sfx.play('sp'); break;
+    case 'ko': V.flash = 0.75; V.shake = 14; Sfx.play('ko'); break;
+    case 'dust': for (let i = 0; i < (e.a ? 8 : 4); i++) V.parts.push({ k: 'd', x: x + rnd(-14, 14), y: GY - 4, vx: rnd(-1.6, 1.6), vy: rnd(-1.3, -0.3), r: rnd(5, 10), life: 24, max: 24 }); if (e.a) Sfx.play('dust'); break;
+    case 'grab': Sfx.play('grab'); break;
+    case 'proj': Sfx.play('proj'); break;
+    case 'clash': sparks(x, y, 14, '#bfefff', 9); Sfx.play('block'); break;
+    case 'swing': Sfx.play('swing'); break;
+    case 'tele': for (let i = 0; i < 10; i++) V.parts.push({ k: 'm', x: x + rnd(-20, 20), y: y + rnd(-60, 60), vx: rnd(-1, 1), vy: rnd(-1.5, 0), r: rnd(8, 16), life: 22, max: 22 }); break;
+    case 'ann': { const k = ANN_K[e.a]; if (k === 'round' || k === 'fight' || k === 'time' || k === 'win' || k === 'draw') Sfx.play('ann'); break; }
+  }
+}
+function processEvents(G) {
+  for (const e of G.E) if (e.id > V.lastEid) { V.lastEid = e.id; fx(e); }
+}
+function updateFx(G) {
+  for (const p of V.parts) {
+    p.life--;
+    if (p.k === 's') { p.x += p.vx; p.y += p.vy; p.vx *= 0.85; p.vy *= 0.85; }
+    else if (p.k === 'r') p.r += 3;
+    else { p.x += p.vx; p.y += p.vy; p.r += 0.3; }
+  }
+  V.parts = V.parts.filter(p => p.life > 0);
+  V.shake *= 0.86; V.flash *= 0.86;
+  if (G) G.F.forEach((F, i) => { V.trail[i] = V.trail[i] > F.hp ? Math.max(F.hp, V.trail[i] - 0.45) : F.hp; });
+}
+function drawParts(g) {
+  for (const p of V.parts) {
+    const a = p.life / p.max;
+    g.globalAlpha = a;
+    if (p.k === 's') { g.strokeStyle = p.col; g.lineWidth = p.w; g.beginPath(); g.moveTo(p.x, p.y); g.lineTo(p.x - p.vx * 2.4, p.y - p.vy * 2.4); g.stroke(); }
+    else if (p.k === 'r') { g.strokeStyle = p.col; g.lineWidth = 3; g.beginPath(); g.arc(p.x, p.y, p.r, 0, Math.PI * 2); g.stroke(); }
+    else if (p.k === 'd') { g.fillStyle = 'rgba(236,224,200,.6)'; g.beginPath(); g.arc(p.x, p.y, p.r, 0, Math.PI * 2); g.fill(); }
+    else { g.fillStyle = 'rgba(70,58,110,.75)'; g.beginPath(); g.arc(p.x, p.y, p.r, 0, Math.PI * 2); g.fill(); }
+  }
+  g.globalAlpha = 1;
+}
+const FONT_D = '"Black Han Sans","Apple SD Gothic Neo","Malgun Gothic",sans-serif';
+const FONT_B = '"IBM Plex Sans KR","Apple SD Gothic Neo","Malgun Gothic",sans-serif';
+const PCOL = ['#ff5a6e', '#4bb9ff'];
+function para(g, x, y, w, h, sk) { g.beginPath(); g.moveTo(x + Math.max(0, sk), y); g.lineTo(x + w + Math.min(0, sk), y); g.lineTo(x + w - Math.max(0, sk), y + h); g.lineTo(x - Math.min(0, sk), y + h); g.closePath(); }
+function outlinedText(g, s, x, y, size, fill, lw) {
+  g.font = size + 'px ' + FONT_D; g.lineJoin = 'round';
+  g.lineWidth = lw || Math.max(4, size * 0.12); g.strokeStyle = INK; g.strokeText(s, x, y);
+  g.fillStyle = fill; g.fillText(s, x, y);
+}
+function drawHUD(g, G) {
+  const tags = App.tags || ['1P', '2P'];
+  for (let i = 0; i < 2; i++) {
+    const F = G.F[i], L = i === 0, bw = 372, bh = 22, bx = L ? 34 : W - 34 - bw, by = 22, sk = L ? 10 : -10;
+    const ratio = clamp(F.hp / F.prm.maxHp, 0, 1), tr = clamp(V.trail[i] / F.prm.maxHp, 0, 1);
+    g.save(); para(g, bx, by, bw, bh, sk); g.clip();
+    g.fillStyle = '#1b1636'; g.fillRect(bx - 12, by, bw + 24, bh);
+    g.fillStyle = '#ff6b5a';
+    if (L) g.fillRect(bx, by, bw * tr, bh); else g.fillRect(bx + bw * (1 - tr), by, bw * tr, bh);
+    const gr = g.createLinearGradient(0, by, 0, by + bh);
+    if (ratio > 0.3) { gr.addColorStop(0, '#ffe680'); gr.addColorStop(1, '#ffb21e'); } else { gr.addColorStop(0, '#ffa15a'); gr.addColorStop(1, '#ff4d4d'); }
+    g.fillStyle = gr;
+    if (L) g.fillRect(bx, by, bw * ratio, bh); else g.fillRect(bx + bw * (1 - ratio), by, bw * ratio, bh);
+    g.restore();
+    para(g, bx, by, bw, bh, sk); g.lineWidth = 3; g.strokeStyle = INK; g.stroke();
+    // meter
+    const mw = 196, mx = L ? bx + 8 : bx + bw - 8 - mw, my = by + bh + 6, m = clamp(F.meter / 100, 0, 1);
+    g.fillStyle = 'rgba(15,12,35,.75)'; g.fillRect(mx, my, mw, 9);
+    g.fillStyle = F.meter >= SP_COST ? (G.frame % 20 < 10 ? '#9ff0ff' : '#5fd6ff') : '#3f8fb8';
+    if (L) g.fillRect(mx, my, mw * m, 9); else g.fillRect(mx + mw * (1 - m), my, mw * m, 9);
+    g.fillStyle = INK; g.fillRect(mx + mw / 2 - 1, my, 2, 9);
+    g.strokeStyle = INK; g.lineWidth = 2; g.strokeRect(mx, my, mw, 9);
+    // name + tag
+    g.textBaseline = 'middle';
+    const ny = my + 24;
+    g.font = '700 12px ' + FONT_B;
+    const tag = tags[i] || '', tw = g.measureText(tag).width + 12;
+    const nm = F.def.name;
+    g.textAlign = L ? 'left' : 'right';
+    const tx = L ? bx : bx + bw - tw;
+    g.fillStyle = PCOL[i]; g.beginPath(); g.roundRect ? g.roundRect(tx, ny - 9, tw, 18, 9) : g.rect(tx, ny - 9, tw, 18); g.fill();
+    g.fillStyle = INK; g.textAlign = 'center'; g.fillText(tag, tx + tw / 2, ny + 0.5);
+    g.textAlign = L ? 'left' : 'right';
+    outlinedText(g, nm, L ? bx + tw + 8 : bx + bw - tw - 8, ny + 1, 20, '#f6f2ff', 4);
+    if (F.meter >= SP_COST) {
+      g.font = '700 11px ' + FONT_B; g.fillStyle = '#9ff0ff';
+      g.fillText('필살 ×' + Math.floor(F.meter / SP_COST), L ? mx + mw + 8 : mx - 8, my + 5);
+    }
+    // round wins
+    for (let w = 0; w < 2; w++) {
+      const cx = L ? 420 - w * 17 : 540 + w * 17, cy = by + bh + 12;
+      g.beginPath(); g.arc(cx, cy, 6, 0, Math.PI * 2);
+      g.fillStyle = F.wins > w ? '#ffc83a' : '#1b1636'; g.fill(); g.lineWidth = 2; g.strokeStyle = INK; g.stroke();
+    }
+    // combo
+    if (F.combo >= 2 && F.comboT < 70) {
+      g.textAlign = L ? 'left' : 'right';
+      const a = clamp((70 - F.comboT) / 20, 0, 1);
+      g.globalAlpha = a;
+      outlinedText(g, F.combo + ' HIT', L ? 40 : W - 40, 150, 44, '#ffc83a', 7);
+      g.font = '700 15px ' + FONT_B; g.fillStyle = '#f6f2ff'; g.fillText('콤보!', L ? 44 : W - 44, 184);
+      g.globalAlpha = 1;
+    }
+  }
+  // timer
+  g.fillStyle = 'rgba(15,12,35,.85)'; g.beginPath();
+  if (g.roundRect) g.roundRect(442, 12, 76, 56, 10); else g.rect(442, 12, 76, 56);
+  g.fill(); g.lineWidth = 3; g.strokeStyle = INK; g.stroke();
+  const secs = Math.ceil(G.timer / 60);
+  g.textAlign = 'center'; g.textBaseline = 'middle';
+  outlinedText(g, String(secs), 480, 42, 38, secs <= 10 && G.phase === 'fight' && G.frame % 30 < 15 ? '#ff6b5a' : '#f6f2ff', 5);
+  // announcements
+  const age = G.frame - G.ann.t;
+  let txt = null, size = 86, dur = 60;
+  switch (G.ann.k) {
+    case 'round': txt = G.F[0].wins === 1 && G.F[1].wins === 1 ? 'FINAL ROUND' : 'ROUND ' + G.round; dur = 58; break;
+    case 'fight': txt = '싸워라!'; dur = 42; break;
+    case 'ko': txt = 'K.O.'; size = 120; dur = 120; break;
+    case 'time': txt = 'TIME OVER'; dur = 110; break;
+    case 'win': txt = (G.F[G.ann.n] ? G.F[G.ann.n].def.name : '') + ' 승리!'; size = 70; dur = 1e9; break;
+    case 'draw': txt = '무승부'; dur = 1e9; break;
+  }
+  if (txt && age >= 0 && age < dur) {
+    const s = 1 + Math.max(0, 0.5 - age * 0.06);
+    g.save(); g.translate(480, 250); g.scale(s, s); g.transform(1, 0, -0.16, 1, 0, 0);
+    g.textAlign = 'center'; g.textBaseline = 'middle';
+    g.globalAlpha = clamp((dur - age) / 10, 0, 1);
+    let fs = size; g.font = fs + 'px ' + FONT_D;
+    while (g.measureText(txt).width > 860 && fs > 30) { fs -= 4; g.font = fs + 'px ' + FONT_D; }
+    outlinedText(g, txt, 0, 0, fs, G.ann.k === 'ko' ? '#ff6b5a' : '#ffc83a', fs * 0.13);
+    g.restore();
+  }
+}
+function drawTag(g, F, tag, i) {
+  if (!tag || F.st === 'down' || F.st === 'ko' || F.st === 'air' || F.st === 'grabbed') return;
+  const x = F.rx != null ? F.rx : F.x, y = GY - (F.ry != null ? F.ry : F.y) - 196 * (F.def.look.build === 'big' ? 1.05 : 1);
+  g.fillStyle = PCOL[i];
+  g.beginPath(); g.moveTo(x - 7, y); g.lineTo(x + 7, y); g.lineTo(x, y + 9); g.closePath(); g.fill();
+  g.font = '700 13px ' + FONT_B; g.textAlign = 'center'; g.textBaseline = 'bottom';
+  g.lineWidth = 4; g.strokeStyle = INK; g.strokeText(tag, x, y - 2); g.fillText(tag, x, y - 2);
+}
+
+/* =========================================================
+   app state + screens
+   ========================================================= */
+const App = {
+  screen: 'title', mode: null, G: null, cpu: null, local: new LocalInput(), remote: new RemoteInput(),
+  tags: ['1P', 'CPU'], paused: false, resultShown: false, lastSent: '', gotSnap: false, cpuOpts: null,
+};
+let roster = (store.get('mf-roster', null) || PRESETS).map(sanitizeFighter);
+if (!roster.length) roster = PRESETS.map(sanitizeFighter);
+let selId = store.get('mf-sel', roster[0].id);
+const getDef = id => roster.find(f => f.id === id) || null;
+const mySel = () => getDef(selId) || roster[0];
+function saveRoster() { store.set('mf-roster', roster); store.set('mf-sel', selId); }
+
+function show(name) {
+  App.screen = name;
+  $$('#app > .screen').forEach(s => { s.hidden = s.id !== 'scr-' + name; });
+  if (name === 'title') { Demo.set(mySel()); renderTitle(); }
+  if (name === 'fight') requestAnimationFrame(fitGame);
+}
+function toast(msg) {
+  const t = $('#toast'); t.textContent = msg; t.hidden = false;
+  clearTimeout(toast.tm); toast.tm = setTimeout(() => { t.hidden = true; }, 1800);
+}
+
+/* ---------- portraits for cards ---------- */
+const portraitCache = {};
+function portrait(def) {
+  const key = JSON.stringify([def.style, def.look]);
+  if (portraitCache[key]) return portraitCache[key];
+  const c = document.createElement('canvas'); c.width = 168; c.height = 168;
+  const g = c.getContext('2d');
+  const F = mkFighter(def, 0); F.x = 0; F.t = 20;
+  const s = 168 / 215;
+  g.setTransform(s, 0, 0, s, 84, 168 - 12 - GY * s);
+  g.lineCap = 'round'; g.lineJoin = 'round';
+  drawFighter(g, F);
+  return (portraitCache[key] = c.toDataURL());
+}
+function fighterCard(def, pressed, extra) {
+  const b = el('button', 'card'); b.type = 'button';
+  b.setAttribute('aria-pressed', pressed ? 'true' : 'false');
+  const img = new Image(); img.alt = ''; img.src = portrait(def); b.appendChild(img);
+  b.appendChild(el('b', null, def.name));
+  b.appendChild(el('span', null, STYLES[def.style].name + (extra ? ' · ' + extra : '')));
+  return b;
+}
+function renderPicker(box, selected, onPick, opts) {
+  opts = opts || {};
+  box.replaceChildren();
+  if (opts.random) {
+    const b = el('button', 'card'); b.type = 'button'; b.setAttribute('aria-pressed', selected === 'random' ? 'true' : 'false');
+    b.appendChild(el('div', 'ph', '?')); b.appendChild(el('b', null, '랜덤')); b.appendChild(el('span', null, '무작위 상대'));
+    b.addEventListener('click', () => { onPick('random'); Sfx.play('ui'); });
+    box.appendChild(b);
+  }
+  for (const f of roster) {
+    const b = fighterCard(f, f.id === selected);
+    b.addEventListener('click', () => { onPick(f.id); Sfx.play('ui'); });
+    box.appendChild(b);
+  }
+  if (opts.addNew) {
+    const b = el('button', 'card new'); b.type = 'button';
+    b.appendChild(el('div', 'ph', '+')); b.appendChild(el('b', null, '새 파이터')); b.appendChild(el('span', null, '랜덤으로 시작'));
+    b.setAttribute('aria-pressed', selected === '__new' ? 'true' : 'false');
+    b.addEventListener('click', opts.addNew);
+    box.appendChild(b);
+  }
+}
+function chips(box, items, cur, onPick) {
+  box.replaceChildren();
+  for (const [v, label] of items) {
+    const b = el('button', 'chip', label); b.type = 'button';
+    b.setAttribute('aria-pressed', v === cur ? 'true' : 'false');
+    b.addEventListener('click', () => { onPick(v); Sfx.play('ui'); });
+    box.appendChild(b);
+  }
+}
+function swatches(box, colors, cur, onPick, label) {
+  box.replaceChildren();
+  colors.forEach((c, i) => {
+    const v = typeof cur === 'number' ? i : c;
+    const b = el('button', 'sw'); b.type = 'button'; b.style.background = c;
+    b.setAttribute('aria-label', label + ' ' + (i + 1));
+    b.setAttribute('aria-pressed', v === cur ? 'true' : 'false');
+    b.addEventListener('click', () => { onPick(v); Sfx.play('ui'); });
+    box.appendChild(b);
+  });
+}
+
+/* ---------- title ---------- */
+function renderTitle() {
+  const f = mySel();
+  $('#hero-name').textContent = f.name;
+  $('#hero-style').textContent = STYLES[f.style].name + ' · ' + STYLES[f.style].sp;
+  $('#btn-sound').textContent = Sfx.on ? '소리 켜짐' : '소리 꺼짐';
+}
+
+/* ---------- demo fighter for previews ---------- */
+const Demo = {
+  F: null, G: null, O: null, camX: 480, auto: 90,
+  set(def) {
+    this.G = { frame: 0, P: [], E: [], eid: 0, pid: 0, phase: 'fight', hitstop: 0 };
+    this.F = mkFighter(def, 0); this.F.x = 480; this.F.meter = 100;
+    this.O = mkFighter(def, 1); this.O.inv = 1e9; this.camX = 480;
+  },
+  refresh(def) { if (!this.F) return this.set(def); this.F.def = def; this.F.prm = buildParams(def); this.O.def = def; this.O.prm = this.F.prm; if (this.F.hp > this.F.prm.maxHp) this.F.hp = this.F.prm.maxHp; },
+  act(k) { if (!this.F) return; if (this.F.st !== 'idle' && this.F.st !== 'walk') return; this.F.meter = 100; this.F.buf[k] = 9; },
+  step() {
+    const F = this.F;
+    if (!F) return;
+    this.G.frame++;
+    F.meter = 100;
+    this.O.x = F.x + 600; this.O.y = 0; this.O.st = 'idle';
+    updFighter(this.G, F, this.O, NOIN, true);
+    if (F.st === 'slam') setSt(F, 'idle');
+    for (const p of this.G.P) p.x += p.vx;
+    this.G.P = this.G.P.filter(p => Math.abs(p.x - F.x) < 420);
+    if (App.screen === 'creator') for (const e of this.G.E) if (e.ty === 'sp' || e.ty === 'proj') Sfx.play(e.ty);
+    this.G.E.length = 0;
+    if (F.st === 'idle') F.x = lerp(F.x, 480, 0.08);
+    this.camX = lerp(this.camX, F.x, 0.15);
+    if (App.screen === 'title' && --this.auto <= 0) { this.auto = rint(110, 170); this.act(pick(['p', 'k', 'k', 's'])); }
+  },
+  draw(cv) {
+    const r = cv.getBoundingClientRect();
+    if (!r.width || !this.F) return;
+    const dpr = Math.min(2, window.devicePixelRatio || 1), w = Math.round(r.width * dpr), h = Math.round(r.height * dpr);
+    if (cv.width !== w || cv.height !== h) { cv.width = w; cv.height = h; }
+    const g = cv.getContext('2d');
+    g.setTransform(1, 0, 0, 1, 0, 0); g.clearRect(0, 0, w, h);
+    const s = h / 280, ox = w / 2 - this.camX * s, oy = h * 0.9 - GY * s;
+    g.setTransform(s, 0, 0, s, ox, oy);
+    const gr = g.createRadialGradient(this.camX, GY, 4, this.camX, GY, 150);
+    gr.addColorStop(0, 'rgba(255,200,58,.35)'); gr.addColorStop(1, 'rgba(255,200,58,0)');
+    g.fillStyle = gr; g.beginPath(); g.ellipse(this.camX, GY, 150, 30, 0, 0, Math.PI * 2); g.fill();
+    g.lineCap = 'round'; g.lineJoin = 'round';
+    this.F.rx = this.F.ry = null;
+    drawShadow(g, this.F);
+    drawFighter(g, this.F);
+    for (const p of this.G.P) drawProj(g, p, this.F);
+  },
+};
+
+/* ---------- creator ---------- */
+const Creator = {
+  draft: null, isNew: false,
+  open(id) { const f = getDef(id) || mySel(); this.load(f, false); show('creator'); },
+  load(f, isNew) { this.draft = JSON.parse(JSON.stringify(f)); this.isNew = isNew; Demo.set(this.draft); this.render(); },
+  change() { Demo.refresh(this.draft); this.render(); },
+  render() {
+    const d = this.draft, lk = d.look;
+    renderPicker($('#cr-roster'), this.isNew ? '__new' : d.id, id => this.load(getDef(id), false), { addNew: () => { this.load(randomFighter(), true); Sfx.play('ui'); } });
+    const nm = $('#cr-name'); if (document.activeElement !== nm) nm.value = d.name;
+    chips($('#cr-style'), STYLE_KEYS.map(k => [k, STYLES[k].name]), d.style, v => { d.style = v; this.change(); });
+    const sd = $('#cr-style-desc'); sd.replaceChildren(el('b', null, '필살기 · ' + STYLES[d.style].sp + ' '), document.createTextNode(STYLES[d.style].desc));
+    const used = STATS.reduce((a, [k]) => a + d.stats[k], 0), left = STAT_TOTAL - used;
+    $('#cr-left').textContent = left;
+    const box = $('#cr-stats'); box.replaceChildren();
+    for (const [k, label] of STATS) {
+      const row = el('div', 'stat-row');
+      row.appendChild(el('span', 'nm', label));
+      const pips = el('div', 'pips'); for (let i = 1; i <= 5; i++) pips.appendChild(el('span', 'pip' + (i <= d.stats[k] ? ' on' : '')));
+      row.appendChild(pips);
+      const minus = el('button', 'step', '−'); minus.type = 'button'; minus.setAttribute('aria-label', label + ' 내리기'); minus.disabled = d.stats[k] <= 1;
+      const plus = el('button', 'step', '+'); plus.type = 'button'; plus.setAttribute('aria-label', label + ' 올리기'); plus.disabled = d.stats[k] >= 5 || left <= 0;
+      minus.addEventListener('click', () => { d.stats[k]--; this.change(); Sfx.play('ui'); });
+      plus.addEventListener('click', () => { d.stats[k]++; this.change(); Sfx.play('ui'); });
+      row.appendChild(minus); row.appendChild(plus); box.appendChild(row);
+    }
+    const P = buildParams(d);
+    $('#cr-derived').textContent = '체력 ' + P.maxHp + ' · 공격력 ×' + P.powM.toFixed(1) + ' · 속도 ×' + P.spd.toFixed(2) + ' · 게이지 충전 ×' + P.tecM.toFixed(2);
+    chips($('#cr-build'), BUILDS, lk.build, v => { lk.build = v; this.change(); });
+    chips($('#cr-hair'), HAIRS, lk.hair, v => { lk.hair = v; this.change(); });
+    chips($('#cr-outfit'), OUTFITS, lk.outfit, v => { lk.outfit = v; this.change(); });
+    swatches($('#cr-skin'), SKINS, lk.skin, v => { lk.skin = v; this.change(); }, '피부색');
+    swatches($('#cr-body'), COLORS, lk.body, v => { lk.body = v; this.change(); }, '옷 색');
+    swatches($('#cr-accent'), COLORS, lk.accent, v => { lk.accent = v; this.change(); }, '포인트 색');
+    swatches($('#cr-haircolor'), HAIR_COLORS, lk.hairColor, v => { lk.hairColor = v; this.change(); }, '머리 색');
+    $('#cr-delete').disabled = this.isNew || roster.length <= 1;
+  },
+  save() {
+    const f = sanitizeFighter(this.draft);
+    const i = roster.findIndex(x => x.id === f.id);
+    if (i >= 0) roster[i] = f; else roster.push(f);
+    selId = f.id; saveRoster();
+    this.load(f, false);
+    toast(f.name + ' 저장 완료! 대전에서 쓸 수 있어요');
+  },
+  del() {
+    if (this.isNew || roster.length <= 1) return;
+    const btn = $('#cr-delete');
+    if (btn.dataset.confirm !== '1') { btn.dataset.confirm = '1'; btn.textContent = '한 번 더 누르면 삭제'; setTimeout(() => { btn.dataset.confirm = ''; btn.textContent = '삭제'; }, 2500); return; }
+    btn.dataset.confirm = ''; btn.textContent = '삭제';
+    roster = roster.filter(x => x.id !== this.draft.id);
+    if (!getDef(selId)) selId = roster[0].id;
+    saveRoster(); this.load(mySel(), false); toast('삭제했어요');
+  },
+};
+
+/* ---------- CPU setup ---------- */
+const CpuSetup = {
+  op: store.get('mf-cpu-op', 'random'), lv: store.get('mf-cpu-lv', 'normal'), stage: store.get('mf-cpu-stage', 'random'),
+  render() {
+    if (this.op !== 'random' && !getDef(this.op)) this.op = 'random';
+    renderPicker($('#cpu-me'), mySel().id, id => { selId = id; saveRoster(); this.render(); });
+    renderPicker($('#cpu-op'), this.op, id => { this.op = id; store.set('mf-cpu-op', id); this.render(); }, { random: true });
+    chips($('#cpu-lv'), Object.keys(CPU_LV).map(k => [k, CPU_LV[k].name]), this.lv, v => { this.lv = v; store.set('mf-cpu-lv', v); this.render(); });
+    chips($('#cpu-stage'), [['random', '랜덤']].concat(STAGE_KEYS.map(k => [k, STAGES[k]])), this.stage, v => { this.stage = v; store.set('mf-cpu-stage', v); this.render(); });
+  },
+  start() {
+    const me = mySel();
+    let op = this.op === 'random' ? null : getDef(this.op);
+    if (!op) { const pool = roster.filter(f => f.id !== me.id); op = pool.length ? pick(pool) : randomFighter(); }
+    App.cpuOpts = { me, op, lv: this.lv, stage: this.stage };
+    startCpuMatch();
+  },
+};
+const resolveStage = s => (STAGE_KEYS.includes(s) ? s : pick(STAGE_KEYS));
+function startCpuMatch() {
+  const o = App.cpuOpts;
+  startMatch('cpu', [o.me, o.op], resolveStage(o.stage), { tags: ['1P', 'CPU'], level: o.lv });
+}
+
+/* =========================================================
+   match control + main loop
+   ========================================================= */
+function startMatch(mode, defs, stage, opts) {
+  opts = opts || {};
+  if (sameLook(defs[0], defs[1])) defs = [defs[0], tintDef(defs[1])];
+  App.mode = mode; App.G = newGame(defs, stage);
+  App.cpu = mode === 'cpu' ? new Cpu(opts.level) : null;
+  App.remote.reset(); App.local.reset();
+  App.resultShown = false; App.paused = false; App.lastSent = ''; App.gotSnap = false;
+  App.tags = opts.tags || ['1P', '2P'];
+  V.parts = []; V.shake = 0; V.flash = 0; V.lastEid = 0; V.trail = [App.G.F[0].prm.maxHp, App.G.F[1].prm.maxHp];
+  $('#ov-pause').hidden = true; $('#ov-result').hidden = true;
+  $('#btn-pause').setAttribute('aria-label', mode === 'cpu' ? '일시정지' : '나가기 메뉴');
+  show('fight');
+  Sfx.init();
+}
+function stopMatch() {
+  App.mode = null; App.G = null; App.cpu = null; App.paused = false;
+  App.local.reset(); clearPads();
+  $('#ov-pause').hidden = true; $('#ov-result').hidden = true;
+}
+function fitGame() {
+  const wrap = $('#stage-wrap'), cv = $('#cv-game');
+  const bw = wrap.clientWidth, bh = wrap.clientHeight;
+  if (!bw || !bh) return;
+  let w = bw, h = w * 9 / 16;
+  if (h > bh) { h = bh; w = h * 16 / 9; }
+  w = Math.floor(w); h = Math.floor(h);
+  cv.style.width = w + 'px'; cv.style.height = h + 'px';
+  const dpr = Math.min(2, window.devicePixelRatio || 1);
+  cv.width = Math.round(w * dpr); cv.height = Math.round(h * dpr);
+}
+function tick() {
+  const G = App.G;
+  if (!G || App.paused) return;
+  if (App.mode === 'guest') {
+    const st = App.local.netState(), key = st.join(',');
+    if (key !== App.lastSent && Online.net) { App.lastSent = key; Online.net.pub({ i: st }); }
+    G.frame++;
+    for (const F of G.F) if (F.tAdv < 3) { F.t++; F.tAdv++; }
+  } else {
+    const i0 = App.local.sample();
+    const i1 = App.mode === 'cpu' ? App.cpu.sample(G, G.F[1], G.F[0]) : App.remote.sample();
+    step(G, [i0, i1]);
+    if (App.mode === 'host' && Online.net && G.frame % 2 === 0) Online.net.pub({ s: encodeSnap(G) });
+  }
+  processEvents(G);
+  updateFx(G);
+  const me = App.mode === 'guest' ? G.F[1] : G.F[0];
+  $('#pb-s').classList.toggle('ready', me.meter >= SP_COST);
+  if (G.phase === 'end' && G.pt >= 90 && !App.resultShown) showResult();
+}
+function renderGame() {
+  const G = App.G, cv = $('#cv-game');
+  if (!G || !cv.width) return;
+  const g = cv.getContext('2d'), sc = cv.width / W;
+  g.setTransform(sc, 0, 0, sc, 0, 0);
+  g.lineCap = 'round'; g.lineJoin = 'round';
+  g.save();
+  if (V.shake > 0.6) g.translate((Math.random() - 0.5) * V.shake, (Math.random() - 0.5) * V.shake);
+  g.drawImage(stageCanvas(G.stage, sc > 1 ? 2 : 1), -10, -6, W + 20, H + 12);
+  for (const F of G.F) {
+    if (App.mode === 'guest') {
+      F.rx = F.rx == null || Math.abs(F.rx - F.x) > 90 ? F.x : lerp(F.rx, F.x, 0.5);
+      F.ry = F.ry == null || Math.abs(F.ry - F.y) > 90 ? F.y : lerp(F.ry, F.y, 0.5);
+    } else { F.rx = F.x; F.ry = F.y; }
+    drawShadow(g, F);
+  }
+  const rank = F => (F.st === 'down' || F.st === 'ko' ? 0 : F.st === 'atk' || F.st === 'slam' ? 2 : 1);
+  [...G.F].sort((a, b) => rank(a) - rank(b)).forEach(F => drawFighter(g, F));
+  for (const p of G.P) drawProj(g, p, G.F[p.o]);
+  drawParts(g);
+  g.restore();
+  G.F.forEach((F, i) => drawTag(g, F, App.tags[i], i));
+  drawHUD(g, G);
+  if (V.flash > 0.01) { g.fillStyle = 'rgba(255,255,255,' + V.flash.toFixed(3) + ')'; g.fillRect(0, 0, W, H); }
+}
+function showResult() {
+  App.resultShown = true;
+  const G = App.G, w = G.winner, me = App.mode === 'guest' ? 1 : 0;
+  $('#res-title').textContent = w < 0 ? '무승부' : G.F[w].def.name + ' 승리!';
+  $('#res-kicker').textContent = w < 0 ? '경기 결과' : w === me ? (App.mode === 'cpu' ? '승리했어요' : '내가 이겼어요') : (App.mode === 'cpu' ? 'CPU에게 졌어요' : '상대가 이겼어요');
+  const mc = G.F[me].maxCombo;
+  $('#res-sub').textContent = '라운드 ' + G.F[0].wins + ' : ' + G.F[1].wins + (mc >= 2 ? ' · 내 최대 콤보 ' + mc : '');
+  const guest = App.mode === 'guest';
+  $('#res-again').hidden = guest;
+  $('#res-again').textContent = App.mode === 'host' ? '한 판 더 (바로 시작)' : '다시 하기';
+  $('#res-menu').textContent = App.mode === 'cpu' ? '메뉴로' : App.mode === 'host' ? '대기실로' : '방 나가기';
+  $('#res-note').hidden = !guest;
+  $('#res-note').textContent = '호스트가 한 판 더를 누르면 바로 시작돼요.';
+  $('#ov-result').hidden = false;
+  $('#res-again').hidden ? $('#res-menu').focus() : $('#res-again').focus();
+}
+function setPaused(p) {
+  if (App.mode === 'cpu') { App.paused = p; $('#pause-kicker').textContent = '일시정지'; $('#pause-title').textContent = '잠깐 쉬는 중'; $('#pause-resume').textContent = '계속하기'; $('#pause-restart').hidden = false; }
+  else { $('#pause-kicker').textContent = '온라인 대전'; $('#pause-title').textContent = '대전을 그만둘까요?'; $('#pause-resume').textContent = '계속 싸우기'; $('#pause-restart').hidden = true; }
+  $('#ov-pause').hidden = !p;
+  if (p) { App.local.releaseAll(); clearPads(); $('#pause-resume').focus(); }
+}
+
+let lastT = 0, acc = 0, accP = 0;
+const STEP = 1000 / 60;
+function loop(ts) {
+  requestAnimationFrame(loop);
+  if (!lastT) lastT = ts;
+  let dt = ts - lastT; lastT = ts;
+  if (dt > 250) dt = 250;
+  if (App.screen === 'fight' && App.G) {
+    acc += dt; let n = 0;
+    while (acc >= STEP && n < 5) { tick(); acc -= STEP; n++; }
+    if (n >= 5) acc = 0;
+    renderGame();
+  } else {
+    acc = 0; accP += dt; let n = 0;
+    while (accP >= STEP && n < 4) { Demo.step(); accP -= STEP; n++; }
+    if (n >= 4) accP = 0;
+    if (App.screen === 'title') Demo.draw($('#cv-hero'));
+    else if (App.screen === 'creator') Demo.draw($('#cv-preview'));
+  }
+}
+
+/* =========================================================
+   controls
+   ========================================================= */
+const KEYMAP = { Space: 'u', ArrowLeft: 'l', KeyA: 'l', ArrowRight: 'r', KeyD: 'r', ArrowUp: 'u', KeyW: 'u', ArrowDown: 'g', KeyS: 'g', KeyJ: 'p', KeyZ: 'p', KeyK: 'k', KeyX: 'k', KeyL: 's', KeyC: 's' };
+window.addEventListener('keydown', e => {
+  if (App.screen !== 'fight' || !App.G) return;
+  if (e.target && (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA')) return;
+  if (e.code === 'Escape') { e.preventDefault(); if ($('#ov-result').hidden) setPaused($('#ov-pause').hidden); return; }
+  const k = KEYMAP[e.code];
+  if (!k) return;
+  e.preventDefault();
+  if (e.repeat || App.paused) return;
+  Sfx.init();
+  App.local.press(k, 'key:' + e.code);
+});
+window.addEventListener('keyup', e => { const k = KEYMAP[e.code]; if (k) App.local.release(k, 'key:' + e.code); });
+window.addEventListener('blur', () => { App.local.releaseAll(); clearPads(); });
+document.addEventListener('visibilitychange', () => { if (document.hidden && App.mode === 'cpu' && App.screen === 'fight' && $('#ov-result').hidden) setPaused(true); });
+
+const pads = $('#pads'), ptrs = new Map();
+function padKeyAt(x, y) { const t = document.elementFromPoint(x, y); const b = t && t.closest && t.closest('.pb'); return b && pads.contains(b) ? b.dataset.k : null; }
+function padSet(id, k) {
+  const old = ptrs.get(id);
+  if (old === k) return;
+  if (old) { App.local.release(old, 'ptr' + id); const ob = pads.querySelector('[data-k="' + old + '"]'); if (ob && ![...ptrs.entries()].some(([pid, v]) => pid !== id && v === old)) ob.classList.remove('on'); }
+  if (k) { App.local.press(k, 'ptr' + id); const nb = pads.querySelector('[data-k="' + k + '"]'); if (nb) nb.classList.add('on'); }
+  if (k) ptrs.set(id, k); else ptrs.delete(id);
+}
+function clearPads() { for (const [id] of ptrs) padSet(id, null); ptrs.clear(); $$('.pb.on').forEach(b => b.classList.remove('on')); }
+pads.addEventListener('pointerdown', e => {
+  e.preventDefault();
+  Sfx.init();
+  if (App.paused) return;
+  const k = padKeyAt(e.clientX, e.clientY);
+  if (k) padSet(e.pointerId, k);
+}, { passive: false });
+window.addEventListener('pointermove', e => { if (ptrs.has(e.pointerId)) padSet(e.pointerId, padKeyAt(e.clientX, e.clientY)); });
+const endPtr = e => { if (ptrs.has(e.pointerId)) padSet(e.pointerId, null); };
+window.addEventListener('pointerup', endPtr);
+window.addEventListener('pointercancel', endPtr);
+pads.addEventListener('contextmenu', e => e.preventDefault());
+pads.addEventListener('touchstart', e => e.preventDefault(), { passive: false });
+$('#cv-game').addEventListener('touchstart', e => e.preventDefault(), { passive: false });
+
+/* =========================================================
+   online play
+   - inside Claude: a "room" (realtime presence) per room code
+   - anywhere else: PeerJS (WebRTC P2P, direct on the same Wi-Fi)
+   - #local: BroadcastChannel between two tabs (testing)
+   The host runs the fight; the guest sends inputs and draws snapshots.
+   ========================================================= */
+const PROTO = 'mf1';
+const CODE_CH = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+const newCode = () => Array.from({ length: 4 }, () => CODE_CH[Math.floor(Math.random() * CODE_CH.length)]).join('');
+const NetEnv = { kind: null, room: null };
+const safeKey = k => k !== '__proto__' && k !== 'constructor' && k !== 'prototype';
+
+class RoomNet {
+  constructor(room) { this.room = room; this.r = null; this.offs = []; this.remotePeer = null; this.lastPres = null; }
+  async open(code, role) {
+    this.role = role;
+    this.r = await this.room.join('mf-' + code.toLowerCase());
+    this.offs.push(this.r.onPeers(ch => this._peers(ch.peers), e => this.onError && this.onError(e && e.code)));
+    await this.r.presence({ v: PROTO, role });
+  }
+  pub(patch) { if (this.r) this.r.presence(patch).catch(() => {}); }
+  myPeer() { const me = this.r && this.r.peers().find(p => p.sameTab); return me ? me.peer : null; }
+  _peers(peers) {
+    const want = this.role === 'host' ? 'guest' : 'host';
+    const cand = peers.filter(p => !p.sameTab && p.presence && p.presence.v === PROTO && p.presence.role === want);
+    let rp = this.remotePeer ? cand.find(p => p.peer === this.remotePeer) : null;
+    if (!rp && this.remotePeer) { this.remotePeer = null; this.lastPres = null; this.onLeave && this.onLeave(); }
+    if (!rp && cand.length) { rp = cand[0]; this.remotePeer = rp.peer; if (this.role === 'host') this.pub({ gp: rp.peer }); }
+    if (rp && rp.presence !== this.lastPres) { this.lastPres = rp.presence; this.onRemote && this.onRemote(rp.presence); }
+  }
+  close() { this.offs.forEach(f => { try { f(); } catch (e) {} }); this.offs = []; if (this.r) this.r.leave().catch(() => {}); this.r = null; }
+}
+class MsgNet {
+  constructor() { this.local = {}; this.remote = Object.create(null); this.alive = false; }
+  pub(patch) { Object.assign(this.local, patch); this._send({ t: 'p', d: patch }); }
+  _hello() { this._send({ t: 'p', d: this.local, full: 1 }); }
+  _recv(m) {
+    if (!m || typeof m !== 'object') return;
+    if (m.t === 'p' && m.d && typeof m.d === 'object') {
+      if (m.full) this.remote = Object.create(null);
+      for (const k of Object.keys(m.d)) if (safeKey(k)) this.remote[k] = m.d[k];
+      this.onRemote && this.onRemote(this.remote);
+    } else if (m.t === 'bye') this._gone();
+  }
+  myPeer() { return null; }
+}
+let peerLib = null;
+function loadPeerJS() {
+  if (window.Peer) return Promise.resolve();
+  if (peerLib) return peerLib;
+  peerLib = new Promise((res, rej) => {
+    const urls = ['https://cdn.jsdelivr.net/npm/peerjs@1.5.5/dist/peerjs.min.js', 'https://unpkg.com/peerjs@1.5.5/dist/peerjs.min.js'];
+    let i = 0;
+    const next = () => {
+      if (i >= urls.length) { peerLib = null; rej(new Error('load')); return; }
+      const s = document.createElement('script'); s.src = urls[i++]; s.async = true;
+      s.onload = () => (window.Peer ? res() : next());
+      s.onerror = () => { s.remove(); next(); };
+      document.head.appendChild(s);
+    };
+    next();
+  });
+  return peerLib;
+}
+class PeerNet extends MsgNet {
+  async open(code, role) {
+    await loadPeerJS();
+    this.role = role;
+    const id = 'making-fight-' + PROTO + '-' + code.toLowerCase();
+    await new Promise((res, rej) => {
+      const peer = this.peer = role === 'host' ? new window.Peer(id, { debug: 0 }) : new window.Peer({ debug: 0 });
+      let opened = false;
+      peer.on('open', () => {
+        opened = true;
+        if (role === 'guest') this._bind(peer.connect(id, { reliable: true, serialization: 'json' }));
+        res();
+      });
+      peer.on('connection', c => { if (this.conn && this.conn.open) { try { c.close(); } catch (e) {} return; } this._bind(c); });
+      peer.on('error', e => {
+        const t = (e && e.type) || 'error';
+        if (!opened) { rej(new Error(t)); return; }
+        if (t === 'peer-unavailable') this.onError && this.onError('notfound');
+        else if (!this.alive) this.onError && this.onError(t);
+      });
+      peer.on('disconnected', () => { try { if (!peer.destroyed) peer.reconnect(); } catch (e) {} });
+    });
+  }
+  _bind(c) {
+    this.conn = c;
+    c.on('open', () => { this.alive = true; this._hello(); });
+    c.on('data', d => this._recv(d));
+    c.on('close', () => { if (this.conn === c) this._gone(); });
+    c.on('error', () => {});
+  }
+  _send(m) { if (this.conn && this.conn.open) { try { this.conn.send(m); } catch (e) {} } }
+  _gone() { const was = this.alive; this.alive = false; this.conn = null; this.remote = Object.create(null); if (was) this.onLeave && this.onLeave(); }
+  close() { this._send({ t: 'bye' }); try { this.conn && this.conn.close(); } catch (e) {} try { this.peer && this.peer.destroy(); } catch (e) {} this.conn = null; this.peer = null; this.alive = false; }
+}
+class LocalNet extends MsgNet {
+  async open(code, role) {
+    this.role = role; this.me = uid();
+    this.bc = new BroadcastChannel('mf-' + code.toLowerCase());
+    this.bc.onmessage = e => {
+      const m = e.data;
+      if (!m || m.from === this.me || m.role === this.role) return;
+      if (this.peer && m.from !== this.peer) return;
+      if (!this.alive) { this.alive = true; this.peer = m.from; this._hello(); }
+      this._recv(m);
+    };
+    this._hello();
+    this.iv = setInterval(() => { if (!this.alive) this._hello(); }, 600);
+  }
+  _send(m) { try { if (this.bc) this.bc.postMessage(Object.assign({}, m, { from: this.me, role: this.role })); } catch (e) {} }
+  _gone() { if (this.alive) { this.alive = false; this.peer = null; this.remote = Object.create(null); this.onLeave && this.onLeave(); } }
+  close() { this._send({ t: 'bye' }); clearInterval(this.iv); if (this.bc) this.bc.close(); this.bc = null; this.alive = false; }
+}
+function makeNet() {
+  if (NetEnv.kind === 'room') return new RoomNet(NetEnv.room);
+  if (NetEnv.kind === 'peer') return new PeerNet();
+  if (NetEnv.kind === 'local') return new LocalNet();
+  return null;
+}
+function netErrText(e) {
+  const c = (e && (e.code || e.message)) || e || 'error';
+  switch (c) {
+    case 'load': return '연결 도구를 불러오지 못했어요. 인터넷 연결을 확인해 주세요.';
+    case 'network': case 'server-error': case 'socket-error': case 'socket-closed': return '연결 서버에 닿지 못했어요. 인터넷 연결을 확인하고 다시 시도해 주세요.';
+    case 'browser-incompatible': return '이 브라우저는 P2P 연결을 지원하지 않아요. 사파리나 크롬 최신 버전으로 열어 주세요.';
+    case 'not_permitted': case 'not_granted': return '이 화면에서는 온라인 방을 쓸 수 없어요. 아티팩트를 공유받은 계정으로 로그인해서 열어 주세요.';
+    case 'limit_reached': return '지금은 방을 더 열 수 없어요. 잠시 후 다시 시도해 주세요.';
+    case 'notfound': return '방을 찾지 못했어요. 코드를 다시 확인해 주세요.';
+    default: return '연결에 실패했어요. 잠시 후 다시 시도해 주세요.';
+  }
+}
+
+const Online = {
+  net: null, role: null, code: '', remoteDef: null, myDef: null, mid: 0, curMid: null, stage: store.get('mf-on-stage', 'random'), view: 'home', joinTimer: 0, lastF: -1, busy: false,
+  setView(v) {
+    this.view = v;
+    ['home', 'wait', 'lobby'].forEach(n => { $('#on-' + n).hidden = n !== v; });
+    $('#on-leave').hidden = v === 'home';
+  },
+  msg(t, err) { const m = $('#on-msg'); m.textContent = t || ''; m.classList.toggle('err', !!err); },
+  render() {
+    renderPicker($('#on-pick'), mySel().id, id => { selId = id; saveRoster(); this.render(); });
+    const ok = !!NetEnv.kind && NetEnv.kind !== 'none' && !this.busy;
+    $('#on-create').disabled = !ok; $('#on-join').disabled = !ok;
+    const nk = $('#netkind');
+    if (!NetEnv.kind) nk.textContent = '연결 방식을 확인하는 중…';
+    else if (NetEnv.kind === 'room') nk.replaceChildren(el('b', null, 'Claude 실시간 방'), document.createTextNode('으로 연결해요. 친구도 이 페이지를 열 수 있어야 해요. 페이지 공유 메뉴에서 친구를 초대해 주세요.'));
+    else if (NetEnv.kind === 'peer') nk.replaceChildren(el('b', null, 'P2P 직접 연결'), document.createTextNode('을 써요. 같은 와이파이에 있으면 가장 빠르고, 다른 곳에 있어도 인터넷만 되면 붙을 수 있어요.'));
+    else if (NetEnv.kind === 'local') nk.replaceChildren(el('b', null, '테스트 모드'), document.createTextNode(': 같은 브라우저의 다른 탭과 연결해요.'));
+    else nk.textContent = '이 화면에서는 온라인 연결을 쓸 수 없어요. 아티팩트를 공유받은 계정으로 로그인해서 열어 주세요.';
+    this.renderLobby();
+  },
+  renderLobby() {
+    const fill = (box, def, who) => {
+      box.replaceChildren();
+      box.appendChild(el('span', 'who', who));
+      if (!def) { box.appendChild(el('b', null, '기다리는 중')); return; }
+      const img = new Image(); img.alt = ''; img.src = portrait(def); box.appendChild(img);
+      box.appendChild(el('b', null, def.name)); box.appendChild(el('span', null, STYLES[def.style].name + ' · ' + STYLES[def.style].sp));
+    };
+    const host = this.role === 'host';
+    fill($('#lob-1'), host ? this.myDef : this.remoteDef, host ? '나 (호스트)' : '호스트');
+    fill($('#lob-2'), host ? this.remoteDef : this.myDef, host ? '상대' : '나');
+    $('#lob-host').hidden = !host; $('#lob-guest').hidden = host;
+    chips($('#lob-stage'), [['random', '랜덤']].concat(STAGE_KEYS.map(k => [k, STAGES[k]])), this.stage, v => { this.stage = v; store.set('mf-on-stage', v); this.renderLobby(); });
+    $('#lob-start').disabled = !this.remoteDef;
+  },
+  attach(net, code) {
+    this.net = net; this.code = code;
+    net.onRemote = s => this.onRemote(s);
+    net.onLeave = () => this.onLeave();
+    net.onError = c => this.leave(netErrText(c));
+  },
+  async create() {
+    if (this.busy || this.net) return;
+    this.busy = true; this.render();
+    this.myDef = mySel(); this.role = 'host'; this.remoteDef = null; this.curMid = null;
+    this.msg('방을 만드는 중…');
+    try {
+      for (let attempt = 0; attempt < 3; attempt++) {
+        const code = newCode(), net = makeNet();
+        if (!net) throw new Error('none');
+        try { await net.open(code, 'host'); }
+        catch (e) { net.close(); if (e && e.message === 'unavailable-id') continue; throw e; }
+        this.attach(net, code);
+        net.pub({ v: PROTO, role: 'host', ph: 'lobby', f: this.myDef });
+        $('#on-code-big').textContent = code;
+        this.setView('wait'); this.msg('');
+        return;
+      }
+      throw new Error('error');
+    } catch (e) { this.msg(netErrText(e), true); }
+    finally { this.busy = false; this.render(); }
+  },
+  async join(raw) {
+    if (this.busy || this.net) return;
+    const code = String(raw || '').toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 4);
+    if (code.length !== 4) { this.msg('코드 4자리를 입력해 주세요.', true); return; }
+    this.busy = true; this.render();
+    this.myDef = mySel(); this.role = 'guest'; this.remoteDef = null; this.curMid = null; this.lastF = -1;
+    this.msg('방을 찾는 중…');
+    try {
+      const net = makeNet();
+      if (!net) throw new Error('none');
+      try { await net.open(code, 'guest'); } catch (e) { net.close(); throw e; }
+      this.attach(net, code);
+      net.pub({ v: PROTO, role: 'guest', f: this.myDef });
+      clearTimeout(this.joinTimer);
+      this.joinTimer = setTimeout(() => { if (this.net && !this.remoteDef) this.leave(netErrText('notfound')); }, 10000);
+    } catch (e) { this.msg(netErrText(e), true); }
+    finally { this.busy = false; this.render(); }
+  },
+  leave(message) {
+    clearTimeout(this.joinTimer);
+    if (this.net) { try { this.net.close(); } catch (e) {} }
+    this.net = null; this.remoteDef = null; this.curMid = null; this.role = null;
+    if (App.mode === 'host' || App.mode === 'guest') stopMatch();
+    if (App.screen === 'fight') show('online');
+    this.setView('home'); this.render();
+    this.msg(message || '', !!message);
+  },
+  onLeave() {
+    if (this.role === 'host') {
+      this.remoteDef = null;
+      if (this.net) this.net.pub({ gp: null, ph: 'lobby', s: null });
+      if (App.mode === 'host') { stopMatch(); show('online'); }
+      this.setView('wait'); this.renderLobby();
+      this.msg('상대가 나갔어요. 같은 코드로 다시 들어올 수 있어요.', true);
+    } else this.leave('호스트가 방을 닫았어요.');
+  },
+  onRemote(s) {
+    if (!s || s.v !== PROTO) return;
+    if (this.role === 'host') {
+      if (s.role !== 'guest') return;
+      if (s.f) {
+        const d = sanitizeFighter(s.f);
+        if (!this.remoteDef || JSON.stringify(d) !== JSON.stringify(this.remoteDef)) { this.remoteDef = d; this.renderLobby(); }
+      }
+      if (this.view === 'wait' && this.remoteDef) { this.setView('lobby'); this.renderLobby(); this.msg(''); Sfx.play('ann'); }
+      if (App.mode === 'host') App.remote.set(s.i);
+    } else {
+      if (s.role !== 'host') return;
+      const mine = this.net && this.net.myPeer();
+      if (s.gp && mine && s.gp !== mine) { this.leave('이미 다른 사람이 들어와 있어요.'); return; }
+      if (s.f) this.remoteDef = sanitizeFighter(s.f);
+      if (!this.remoteDef) return;
+      clearTimeout(this.joinTimer);
+      if (s.ph === 'play' && s.mid && s.mid !== this.curMid) {
+        this.curMid = s.mid; this.lastF = -1;
+        startMatch('guest', [this.remoteDef, this.myDef], STAGE_KEYS.includes(s.stage) ? s.stage : 'dojo', { tags: ['상대', '나'] });
+      } else if (s.ph === 'lobby' && (this.view !== 'lobby' || App.mode === 'guest')) {
+        this.curMid = null;
+        if (App.mode === 'guest') { stopMatch(); show('online'); }
+        this.setView('lobby'); this.renderLobby(); this.msg('');
+      } else if (this.view === 'home' && App.mode !== 'guest') { this.setView('lobby'); this.renderLobby(); this.msg(''); }
+      if (App.mode === 'guest' && s.s && s.s.f !== this.lastF) { this.lastF = s.s.f; applySnap(App.G, s.s); }
+    }
+  },
+  startHost() {
+    if (this.role !== 'host' || !this.remoteDef || !this.net) return;
+    this.mid = (this.mid % 1e6) + 1 + Math.floor(Math.random() * 1000);
+    const stage = resolveStage(this.stage);
+    this.net.pub({ ph: 'play', mid: this.mid, stage, f: this.myDef });
+    startMatch('host', [this.myDef, this.remoteDef], stage, { tags: ['나', '상대'] });
+  },
+};
+async function detectNet() {
+  if (location.hash === '#local' && 'BroadcastChannel' in window) NetEnv.kind = 'local';
+  else if (window.claude && typeof window.claude.use === 'function') {
+    try { const r = await window.claude.use('room'); if (r) { NetEnv.kind = 'room'; NetEnv.room = r; } else NetEnv.kind = 'none'; }
+    catch (e) { NetEnv.kind = 'none'; }
+  } else NetEnv.kind = 'peer';
+  if (App.screen === 'online') Online.render();
+}
+
+/* =========================================================
+   wiring
+   ========================================================= */
+$$('[data-go]').forEach(b => b.addEventListener('click', () => {
+  Sfx.init(); Sfx.play('ui');
+  const go = b.dataset.go;
+  if (go === 'creator') Creator.open(selId);
+  else if (go === 'cpu') { CpuSetup.render(); show('cpu'); }
+  else if (go === 'online') { Online.render(); if (!Online.net) Online.setView('home'); show('online'); }
+}));
+$$('[data-back]').forEach(b => b.addEventListener('click', () => {
+  Sfx.play('ui');
+  if (App.screen === 'online' && Online.net) Online.leave('');
+  show('title');
+}));
+$('#btn-sound').addEventListener('click', () => { Sfx.on = !Sfx.on; store.set('mf-sound', Sfx.on); if (Sfx.on) { Sfx.init(); Sfx.play('ui'); } renderTitle(); });
+$('#btn-help').addEventListener('click', () => { $('#ov-help').hidden = false; $('#help-close').focus(); });
+$('#help-close').addEventListener('click', () => { $('#ov-help').hidden = true; });
+
+$('#cr-form').addEventListener('submit', e => { e.preventDefault(); Creator.save(); Sfx.play('ui'); });
+$('#cr-name').addEventListener('input', e => { Creator.draft.name = e.target.value.slice(0, 8); });
+$('#cr-name').addEventListener('blur', () => { Creator.render(); });
+$('#cr-random').addEventListener('click', () => {
+  const r = randomFighter(), d = Creator.draft;
+  Object.assign(d, { name: r.name, style: r.style, stats: r.stats, look: r.look });
+  $('#cr-name').value = d.name; Creator.change(); Sfx.play('ui');
+});
+$('#cr-delete').addEventListener('click', () => Creator.del());
+$$('[data-demo]').forEach(b => b.addEventListener('click', () => { Sfx.init(); Demo.act(b.dataset.demo); }));
+
+$('#cpu-start').addEventListener('click', () => { Sfx.init(); CpuSetup.start(); });
+
+$('#on-create').addEventListener('click', () => { Sfx.init(); Online.create(); });
+$('#on-join-form').addEventListener('submit', e => { e.preventDefault(); Sfx.init(); Online.join($('#on-code').value); });
+$('#on-code').addEventListener('input', e => { const v = e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 4); if (v !== e.target.value) e.target.value = v; });
+$('#on-copy').addEventListener('click', () => {
+  const code = Online.code;
+  const done = () => toast('코드 ' + code + ' 복사했어요');
+  try {
+    navigator.clipboard.writeText(code).then(done, () => { selectCode(); toast('코드를 길게 눌러 복사해 주세요'); });
+  } catch (e) { selectCode(); toast('코드를 길게 눌러 복사해 주세요'); }
+});
+function selectCode() { try { const r = document.createRange(); r.selectNodeContents($('#on-code-big')); const s = getSelection(); s.removeAllRanges(); s.addRange(r); } catch (e) {} }
+$('#on-leave').addEventListener('click', () => Online.leave(''));
+$('#lob-start').addEventListener('click', () => { Sfx.init(); Online.startHost(); });
+
+$('#btn-pause').addEventListener('click', () => setPaused(true));
+$('#pause-resume').addEventListener('click', () => setPaused(false));
+$('#pause-restart').addEventListener('click', () => { setPaused(false); startCpuMatch(); });
+$('#pause-quit').addEventListener('click', () => {
+  if (App.mode === 'cpu') { stopMatch(); show('title'); }
+  else { Online.leave(''); }
+});
+$('#res-again').addEventListener('click', () => {
+  if (App.mode === 'cpu') startCpuMatch();
+  else if (App.mode === 'host') Online.startHost();
+});
+$('#res-menu').addEventListener('click', () => {
+  if (App.mode === 'cpu') { stopMatch(); show('title'); }
+  else if (App.mode === 'host') {
+    if (Online.net) Online.net.pub({ ph: 'lobby', s: null });
+    stopMatch(); show('online'); Online.setView(Online.remoteDef ? 'lobby' : 'wait'); Online.renderLobby();
+  } else Online.leave('');
+});
+window.addEventListener('resize', () => { if (App.screen === 'fight') fitGame(); });
+window.addEventListener('pagehide', () => { if (Online.net) { try { Online.net.close(); } catch (e) {} } });
+window.addEventListener('orientationchange', () => setTimeout(fitGame, 250));
+document.addEventListener('pointerdown', () => Sfx.init(), { once: true });
+if (document.fonts && document.fonts.ready) document.fonts.ready.then(() => { for (const k in stageCache) delete stageCache[k]; });
+
+saveRoster();
+show('title');
+detectNet();
+requestAnimationFrame(loop);
+// test hook (harmless in normal play)
+window.__mf = { App, Online, V, roster: () => roster, encodeSnap, applySnap, step, newGame, Cpu, sanitizeFighter, randomFighter, STYLE_KEYS };
+})();
+</script>
+</body>
+</html>
