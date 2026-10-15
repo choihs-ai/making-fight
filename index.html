@@ -10,7 +10,7 @@
 <meta name="theme-color" content="#16132e">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Black+Han+Sans&family=IBM+Plex+Sans+KR:wght@400;600;700&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Black+Han+Sans&family=IBM+Plex+Sans+KR:wght@400;600;700&family=Nanum+Myeongjo:wght@700;800&display=swap">
 <style>
 /* Layout: one-screen arcade app. Menus are a centered column over an arena backdrop;
    the fight is a 16:9 canvas with thumb pads under it (portrait) or over its corners (landscape). */
@@ -30,6 +30,12 @@
   --glow-a:#2d2470;
   --glow-b:#47184e;
   --scrim:rgba(13,10,32,.8);
+  --paper:#f3e8d3;
+  --paper-2:#e8d9bd;
+  --paper-ink:#2b1d12;
+  --paper-dim:#7a6450;
+  --seal:#c8322b;
+  --font-brush:"Nanum Myeongjo","AppleMyungjo","Batang",serif;
   --font-display:"Black Han Sans","Apple SD Gothic Neo","Malgun Gothic","Noto Sans KR",sans-serif;
   --font-body:"IBM Plex Sans KR",-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Malgun Gothic","Noto Sans KR",sans-serif;
   color-scheme:dark;
@@ -113,6 +119,7 @@ button{font-family:inherit;color:inherit}
 /* ---------- creator ---------- */
 .creator{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.15fr);gap:22px;align-items:start}
 @media (max-width:780px){.creator{grid-template-columns:minmax(0,1fr)}.preview canvas{height:170px}.derived{display:none}}
+.move-list .seal-mini{grid-column:1 / -1}
 .preview{position:sticky;top:-18px;z-index:1;border-radius:20px;border:1px solid var(--line);overflow:hidden;background:linear-gradient(180deg,var(--night-2),var(--panel))}
 .preview canvas{display:block;width:100%;height:clamp(210px,38vh,380px)}
 .demo-row{display:flex;gap:8px;padding:10px;border-top:1px solid var(--line);background:var(--night-2);flex-wrap:wrap}
@@ -132,6 +139,55 @@ button{font-family:inherit;color:inherit}
 .step:disabled{opacity:.3;cursor:default}
 .actions{display:flex;gap:10px;flex-wrap:wrap}
 .actions .btn{flex:1}
+
+/* ---------- move lab ---------- */
+.move-card{background:var(--night-2);border:1px solid var(--line);border-radius:16px;padding:14px;display:flex;flex-direction:column;gap:12px}
+.move-list{display:grid;grid-template-columns:auto minmax(0,1fr);gap:6px 14px;font-size:15px}
+.move-list span{color:var(--dim);font-weight:600}
+.move-list b{font-weight:700}
+.lab-intro{margin:0;color:var(--dim);max-width:62ch}
+.lab{display:grid;grid-template-columns:minmax(0,1.35fr) minmax(0,1fr);gap:20px;align-items:start}
+@media (max-width:780px){.lab{grid-template-columns:minmax(0,1fr)}}
+.lab-stage{border-radius:20px;border:1px solid var(--line);overflow:hidden;background:linear-gradient(180deg,var(--night-2),var(--panel))}
+#cv-lab{display:block;width:100%;height:clamp(280px,min(54vh,92vw),500px);touch-action:none;cursor:grab}
+.lab-tools{display:flex;flex-direction:column;gap:10px;padding:12px;border-top:1px solid var(--line);background:var(--night-2)}
+.tool-row{display:flex;gap:8px;flex-wrap:wrap}
+.tool-row .btn{flex:1;min-width:0;padding:0 10px}
+.lab-side{display:flex;flex-direction:column;gap:18px;min-width:0}
+.meters{display:flex;flex-direction:column;gap:10px}
+.meter{display:grid;grid-template-columns:52px minmax(0,1fr) 84px;gap:10px;align-items:center;font-size:14px;font-weight:600}
+.meter .bar{height:12px;border-radius:3px;background:var(--line);overflow:hidden;transform:skewX(-16deg)}
+.meter .bar i{display:block;height:100%;background:var(--gold)}
+.meter .v{color:var(--dim);font-variant-numeric:tabular-nums;text-align:right;font-size:13px}
+.hint{margin:0;color:var(--dim);font-size:14px}
+.hint.warn{color:var(--p1)}
+
+/* ---------- my martial art workshop ---------- */
+.steps .chip{min-width:78px}
+.lab-pane{display:flex;flex-direction:column;gap:18px}
+.art-grid{display:grid;grid-template-columns:minmax(0,240px) minmax(0,1fr);gap:22px;align-items:start}
+@media (max-width:640px){.art-grid{grid-template-columns:minmax(0,1fr)}}
+.seal-box{display:flex;flex-direction:column;gap:10px;align-items:stretch;max-width:260px}
+#cv-seal{display:block;width:100%;aspect-ratio:1/1;border-radius:18px;background:var(--paper);touch-action:none;cursor:crosshair}
+.multi .chip[aria-pressed="true"]{background:var(--p2);border-color:var(--p2);color:var(--night)}
+.book{background:var(--paper);color:var(--paper-ink);border-radius:20px;padding:22px clamp(16px,4vw,30px);display:flex;flex-direction:column;gap:18px;
+  background-image:linear-gradient(90deg,rgba(43,29,18,.06) 1px,transparent 1px);background-size:44px 100%}
+.book-head{display:flex;gap:16px;align-items:center}
+.book-head canvas{width:84px;height:84px;flex:none}
+.book-kicker{margin:0;font-size:12px;letter-spacing:.14em;font-weight:700;color:var(--paper-dim)}
+.book-title{margin:2px 0 0;font-family:var(--font-brush);font-weight:800;font-size:clamp(30px,7vw,44px);line-height:1.1;overflow-wrap:anywhere}
+.book-motto{margin:6px 0 0;font-family:var(--font-brush);font-size:17px;color:var(--paper-ink)}
+.book-type{margin:0;align-self:flex-start;background:var(--seal);color:var(--paper);font-weight:700;padding:6px 12px;border-radius:6px;font-size:14px}
+.book-grid{display:grid;grid-template-columns:minmax(0,230px) minmax(0,1fr);gap:20px;align-items:start}
+@media (max-width:640px){.book-grid{grid-template-columns:minmax(0,1fr)}}
+.book-grid svg{width:100%;max-width:240px;height:auto;display:block;margin:0 auto}
+.book-moves{margin:0;padding:0;list-style:none;display:flex;flex-direction:column;gap:10px}
+.book-moves li{display:grid;grid-template-columns:76px minmax(0,1fr);gap:2px 12px;padding-bottom:10px;border-bottom:1px solid rgba(43,29,18,.15)}
+.book-moves .cmd{grid-row:span 2;align-self:center;font-weight:700;font-size:13px;text-align:center;border:1.5px solid var(--paper-ink);border-radius:8px;padding:4px 2px}
+.book-moves b{font-family:var(--font-brush);font-weight:800;font-size:19px}
+.book-moves .meta{font-size:13px;color:var(--paper-dim)}
+.book-moves li.empty{opacity:.45}
+.book-foot{margin:0;font-size:13px;color:var(--paper-dim)}
 
 /* ---------- online ---------- */
 .netkind{margin:0;font-size:14px;color:var(--dim);background:var(--night-2);border:1px solid var(--line);border-radius:14px;padding:12px 14px}
@@ -255,6 +311,17 @@ button{font-family:inherit;color:inherit}
           </div>
         </div>
         <div class="sec">
+          <label class="label" for="cr-art">내 무술 이름 (선택, 최대 10자)</label>
+          <input class="text-in" id="cr-art" type="text" maxlength="10" spellcheck="false" placeholder="예: 번개권">
+        </div>
+        <div class="sec">
+          <span class="label">나만의 무술 · 초식</span>
+          <div class="move-card">
+            <div class="move-list" id="cr-moves"></div>
+            <button class="btn gold" type="button" id="cr-lab">나만의 무술 만들기</button>
+          </div>
+        </div>
+        <div class="sec">
           <span class="label">격투 스타일</span>
           <div class="chips" id="cr-style"></div>
           <p class="style-desc" id="cr-style-desc"></p>
@@ -276,6 +343,40 @@ button{font-family:inherit;color:inherit}
         </div>
       </form>
     </div>
+  </div>
+</section>
+
+<section id="scr-moves" class="screen" hidden>
+  <div class="wrap">
+    <header class="bar"><button class="back" type="button" id="ml-back">← 파이터</button><h2>나만의 무술</h2></header>
+    <div class="chips steps" id="ml-tab"></div>
+    <div class="lab-pane" id="ml-p-art">
+      <div class="art-grid">
+        <div class="seal-box">
+          <span class="label">낙관 (도장) 그리기</span>
+          <canvas id="cv-seal" aria-label="손가락으로 낙관을 그리세요"></canvas>
+          <button class="btn" type="button" id="seal-clear">다시 그리기</button>
+        </div>
+        <div class="sec-stack">
+          <div class="sec"><label class="label" for="ml-art">무술 이름 (최대 10자)</label><input class="text-in" id="ml-art" type="text" maxlength="10" spellcheck="false" placeholder="예: 번개권"></div>
+          <div class="sec"><label class="label" for="ml-motto">가르침 한 줄 (최대 24자)</label><input class="text-in" id="ml-motto" type="text" maxlength="24" spellcheck="false" placeholder="예: 먼저 맞히는 쪽이 이긴다"></div>
+          <p class="hint">낙관은 대전 화면의 이름 옆과 비급서에 찍혀요. 비워 두면 무술 이름의 첫 글자로 찍혀요.</p>
+          <p class="hint">다음 단계에서 서 있는 자세를 만들고, 손가락으로 직접 초식을 녹화해요.</p>
+        </div>
+      </div>
+    </div>
+    <div class="lab" id="ml-p-body" hidden>
+      <div class="lab-stage">
+        <canvas id="cv-lab" aria-label="자세와 초식을 만드는 화면"></canvas>
+        <div class="lab-tools">
+          <div class="chips" id="ml-sub"></div>
+          <div class="tool-row" id="ml-tools"></div>
+        </div>
+      </div>
+      <div class="lab-side" id="ml-side"></div>
+    </div>
+    <div id="ml-p-book" hidden></div>
+    <button class="btn gold big" type="button" id="ml-save">무술 저장</button>
   </div>
 </section>
 
@@ -385,11 +486,12 @@ button{font-family:inherit;color:inherit}
       <li><b>이동</b><span>◀ ▶ 버튼 · 키보드 ← → 또는 A D</span></li>
       <li><b>점프</b><span>▲ 버튼 · ↑ 또는 W. 공중에서 펀치·킥 가능</span></li>
       <li><b>막기</b><span>막기 버튼 · ↓ 또는 S. 대미지를 크게 줄여요</span></li>
-      <li><b>펀치</b><span>J. 맞히면서 연타하면 3연타 콤보</span></li>
-      <li><b>킥</b><span>K. 느리지만 멀리 닿고 아파요</span></li>
+      <li><b>펀치</b><span>J. 앞/뒤 + 펀치로 다른 초식</span></li>
+      <li><b>킥</b><span>K. 앞/뒤 + 킥으로 다른 초식</span></li>
+      <li><b>연계</b><span>초식이 맞은 직후 다음 초식을 누르면 내가 정한 순서대로 이어져요</span></li>
       <li><b>필살기</b><span>L. 게이지 50 이상일 때. 펀치·킥이 맞은 직후 누르면 이어져요</span></li>
     </ul>
-    <p class="dim">레슬러의 잡기는 막을 수 없어요. 60초 안에 쓰러뜨리지 못하면 남은 체력으로 판정해요.</p>
+    <p class="dim">앞 = 상대 쪽 방향이에요. 앞/뒤를 누른 채 펀치·킥을 누르면 그 칸의 초식이 나가요. 초식은 파이터 만들기 → 나만의 무술에서 손가락으로 녹화해요. 레슬러의 잡기는 막을 수 없어요. 60초 안에 쓰러뜨리지 못하면 남은 체력으로 판정해요.</p>
     <button class="btn gold" type="button" id="help-close">알겠어요</button>
   </div>
 </div>
@@ -438,7 +540,13 @@ const COLORS = ['#e8403a', '#f2892b', '#f5c834', '#3fb85b', '#20b8b0', '#2f8de4'
 const HAIR_COLORS = ['#1d1a1f', '#5a3a22', '#b98a4a', '#e0d8c8', '#d43b2f', '#3b6fd8'];
 const HAIRS = [['short', '짧은 머리'], ['spike', '삐죽 머리'], ['mohawk', '모히칸'], ['pony', '묶은 머리'], ['bald', '민머리']];
 const BUILDS = [['slim', '날씬'], ['mid', '보통'], ['big', '거구']];
-const OUTFITS = [['gi', '도복'], ['tank', '민소매'], ['bare', '상의 탈의']];
+const OUTFITS = [['gi', '도복'], ['tank', '민소매'], ['bare', '상의 탈의'], ['robot', '로봇 장갑']];
+const LIMBS = [['aF', '앞손'], ['aB', '뒷손'], ['lF', '앞발'], ['lB', '뒷발']];
+const ARM_R = [[-70, 190], [0, 165]], LEG_R = [[-100, 135], [-160, 0]];
+const MOVE_NAMES = {
+  boxer: ['스트레이트', '로우킥'], tkd: ['정권 지르기', '돌려차기'], wrestler: ['해머 펀치', '밀어차기'],
+  kungfu: ['장권', '옆차기'], ninja: ['수도 치기', '그림자 발차기'],
+};
 const NAME_A = ['번개', '강철', '불꽃', '바람', '천둥', '그림자', '폭풍', '얼음', '황금', '돌', '달빛', '태풍', '철벽', '회오리', '벼락', '은빛'];
 const NAME_B = ['주먹', '발차기', '곰', '호랑이', '늑대', '용', '매', '킥', '펀치', '대장', '장군', '소년', '소녀', '전사', '검객', '여우'];
 const HEX = /^#[0-9a-fA-F]{6}$/;
@@ -456,8 +564,130 @@ const PRESETS = [
     look: { build: 'mid', hair: 'mohawk', outfit: 'gi', skin: 1, body: '#20b8b0', accent: '#f5c834', hairColor: '#1d1a1f' } },
 ];
 
-function cleanName(s) {
-  return String(s == null ? '' : s).replace(/[\u0000-\u001f\u007f-\u009f\u00ad\u200b-\u200f\u2028-\u202e\u2060-\u206f\ufeff<>]/g, '').trim().slice(0, 8);
+function cleanName(s, max) {
+  return String(s == null ? '' : s).replace(/[\u0000-\u001f\u007f-\u009f\u00ad\u200b-\u200f\u2028-\u202e\u2060-\u206f\ufeff<>]/g, '').trim().slice(0, max || 8);
+}
+function clonePose(p) {
+  return { lean: p.lean || 0, drop: p.drop || 0, dx: p.dx || 0, aF: p.aF.slice(), aB: p.aB.slice(), lF: p.lF.slice(), lB: p.lB.slice() };
+}
+// keep user-made poses inside the joint ranges the editor allows
+function cleanPose(p, d) {
+  if (!p || typeof p !== 'object') return clonePose(d);
+  const n = (v, a, b, df) => Math.round(clamp(Number.isFinite(+v) ? +v : df, a, b) * 10) / 10;
+  const pr = (v, dv, R) => (Array.isArray(v) ? [n(v[0], R[0][0], R[0][1], dv[0]), n(v[1], R[1][0], R[1][1], dv[1])] : dv.slice());
+  return {
+    lean: n(p.lean, -35, 40, d.lean || 0), drop: n(p.drop, 0, 40, d.drop || 0), dx: n(p.dx, -15, 25, d.dx || 0),
+    aF: pr(p.aF, d.aF, ARM_R), aB: pr(p.aB, d.aB, ARM_R), lF: pr(p.lF, d.lF, LEG_R), lB: pr(p.lB, d.lB, LEG_R),
+  };
+}
+// ---- my own martial art: moves are recorded finger motions ----
+const SLOT_KEYS = ['p', 'k', 'fp', 'fk', 'bp', 'bk'];
+const SLOT_CMD = { p: '펀치', k: '킥', fp: '앞+펀치', fk: '앞+킥', bp: '뒤+펀치', bk: '뒤+킥' };
+const ART_NAMES = { fp: '솟구치는 주먹', fk: '하늘 돌려차기', bp: '내려찍기', bk: '바닥 쓸기' };
+// finger paths (x forward, y up is negative) used for the starter moves
+// each one: a slow wind-up, then the fast strike, then a short hold
+const ART_TEMPLATES = {
+  p:  { limb: 'aF', keys: [[38, -126, 6], [96, -114, 6], [96, -114, 4]], next: ['p', 'k'] },
+  k:  { limb: 'lF', keys: [[30, -40, 14], [104, -84, 8], [104, -84, 4]], next: ['fp'] },
+  fp: { limb: 'aB', keys: [[24, -70, 18], [58, -180, 11], [58, -180, 4]], next: [] },
+  fk: { limb: 'lF', keys: [[-20, -30, 16], [70, -120, 8], [100, -150, 4], [100, -150, 4]], next: [] },
+  bp: { limb: 'aF', keys: [[28, -196, 24], [86, -62, 10], [86, -62, 4]], next: ['bk'] },
+  bk: { limb: 'lB', keys: [[-60, -8, 10], [104, -12, 14], [104, -12, 4]], next: [] },
+};
+const REC_STEP = 3, REC_MAX = 72, VMAX = { a: 10, l: 9 };
+const SEAL_CH = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_';
+function ikLimb(o, T, L1, L2, leg) {
+  const dx = T[0] - o[0], dy = T[1] - o[1];
+  const d = clamp(Math.hypot(dx, dy), Math.abs(L1 - L2) + 1, L1 + L2 - 0.01);
+  const aT = Math.atan2(dx, dy) / D2R;
+  const al = Math.acos(clamp((L1 * L1 + d * d - L2 * L2) / (2 * L1 * d), -1, 1)) / D2R;
+  const be = Math.acos(clamp((L1 * L1 + L2 * L2 - d * d) / (2 * L1 * L2), -1, 1)) / D2R;
+  if (leg) return [clamp(aT + al, LEG_R[0][0], LEG_R[0][1]), clamp(-(180 - be), LEG_R[1][0], LEG_R[1][1])];
+  let a = aT - al; if (a < -90) a += 360;
+  return [clamp(a, ARM_R[0][0], ARM_R[0][1]), clamp(180 - be, ARM_R[1][0], ARM_R[1][1])];
+}
+// pose with one limb reaching for target T; the body leans into punches and away from high kicks
+function recPose(stance, B, limb, T) {
+  const arm = limb[0] === 'a', p = clonePose(stance);
+  p.lean = clamp(arm ? stance.lean + clamp((T[0] - 40) * 0.15, -12, 18) : stance.lean - clamp((-T[1] - 40) * 0.2, 0, 28), -35, 40);
+  if (arm) { const J = solve(p, B); p[limb] = ikLimb(J[limb].o, T, B.ua, B.fa, false); }
+  else { const J = solve(stance, B); p[limb] = ikLimb([J.hip[0] - (limb === 'lB' ? 3 : 0), J.hip[1]], T, B.thigh, B.shin, true); }
+  return p;
+}
+// the limb chases the finger, but no faster than a real limb can move
+function makeRecorder(stance, B, limb) {
+  const vmax = limb[0] === 'a' ? VMAX.a : VMAX.l;
+  const R = { limb, cur: solve(stance, B)[limb].e.slice(), fr: [[Math.round(stance[limb][0]), Math.round(stance[limb][1]), Math.round(stance.lean)]], t: 1, pose: stance, path: [] };
+  R.step = T => {
+    const dx = T[0] - R.cur[0], dy = T[1] - R.cur[1], d = Math.hypot(dx, dy);
+    if (d > vmax) { R.cur[0] += dx / d * vmax; R.cur[1] += dy / d * vmax; } else { R.cur[0] = T[0]; R.cur[1] = T[1]; }
+    R.pose = recPose(stance, B, limb, R.cur);
+    if (R.t % REC_STEP === 0) R.fr.push([Math.round(R.pose[limb][0]), Math.round(R.pose[limb][1]), Math.round(R.pose.lean)]);
+    R.path.push(R.cur.slice());
+    R.t++;
+    return R.t < REC_MAX;
+  };
+  return R;
+}
+function synthRec(stance, B, limb, keys) {
+  const R = makeRecorder(stance, B, limb);
+  let from = R.cur.slice();
+  for (const [x, y, n] of keys) {
+    for (let i = 1; i <= n; i++) if (!R.step([lerp(from[0], x, i / n), lerp(from[1], y, i / n)])) return R.fr;
+    from = [x, y];
+  }
+  return R.fr;
+}
+function defaultArt(key, style, stance, B) {
+  const T = ART_TEMPLATES[key], nm = MOVE_NAMES[style] || MOVE_NAMES.kungfu;
+  return { name: key === 'p' ? nm[0] : key === 'k' ? nm[1] : ART_NAMES[key], limb: T.limb, fr: synthRec(stance, B, T.limb, T.keys), next: T.next.slice() };
+}
+function cleanArt(s, d, stance, B) {
+  if (!s || typeof s !== 'object') return d;
+  const limb = LIMBS.some(l => l[0] === s.limb) ? s.limb : d.limb;
+  const name = cleanName(s.name, 10) || d.name;
+  const next = Array.isArray(s.next) ? SLOT_KEYS.filter(k => s.next.includes(k)) : d.next;
+  if (!Array.isArray(s.fr)) {
+    // older two-pose strike (ready pose -> hit pose): replay it as a recorded motion
+    if (!s.w || !s.h) return d;
+    const W = solve(cleanPose(s.w, stance), B)[limb].e, E = solve(cleanPose(s.h, stance), B)[limb].e;
+    const n = Math.max(3, Math.round(Math.hypot(E[0] - W[0], E[1] - W[1]) / 9));
+    return { name, limb, fr: synthRec(stance, B, limb, [[W[0], W[1], 4], [E[0], E[1], n], [E[0], E[1], 3]]), next };
+  }
+  const R = limb[0] === 'a' ? ARM_R : LEG_R;
+  const fr = s.fr.slice(0, REC_MAX / REC_STEP).filter(Array.isArray).map(f => [
+    Math.round(clamp(Number(f[0]) || 0, R[0][0], R[0][1])), Math.round(clamp(Number(f[1]) || 0, R[1][0], R[1][1])), Math.round(clamp(Number(f[2]) || 0, -35, 40))]);
+  return fr.length >= 2 ? { name, limb, fr, next } : d;
+}
+function cleanMoves(m, style, build) {
+  m = m && typeof m === 'object' ? m : {};
+  const B = dimsOf(build);
+  const stance = cleanPose(m.stance, POSE.idle), guard = cleanPose(m.guard, POSE.guard);
+  const src = m.arts && typeof m.arts === 'object' ? m.arts : { p: m.p, k: m.k };
+  const arts = {};
+  for (const key of SLOT_KEYS) {
+    const v = src[key];
+    if (v === null && key !== 'p' && key !== 'k') { arts[key] = null; continue; }
+    arts[key] = v === undefined ? defaultArt(key, style, stance, B) : cleanArt(v, defaultArt(key, style, stance, B), stance, B);
+  }
+  return { stance, guard, arts };
+}
+function sealDecode(s) {
+  if (typeof s !== 'string' || !/^[A-Za-z0-9_|-]{0,300}$/.test(s)) return [];
+  return s.split('|').filter(x => x.length >= 2).slice(0, 16).map(st => {
+    const pts = [];
+    for (let i = 0; i + 1 < st.length; i += 2) pts.push([SEAL_CH.indexOf(st[i]), SEAL_CH.indexOf(st[i + 1])]);
+    return pts;
+  });
+}
+function sealEncode(strokes) {
+  const out = []; let total = 0;
+  for (const st of strokes) {
+    let str = '';
+    for (const [x, y] of st) { if (total >= 130) break; str += SEAL_CH[clamp(Math.round(x), 0, 63)] + SEAL_CH[clamp(Math.round(y), 0, 63)]; total++; }
+    if (str.length >= 2) out.push(str);
+  }
+  return out.join('|');
 }
 function sanitizeFighter(f) {
   f = f && typeof f === 'object' ? f : {};
@@ -472,9 +702,12 @@ function sanitizeFighter(f) {
   const lk = f.look && typeof f.look === 'object' ? f.look : {};
   const inList = (v, list, d) => (list.some(x => x[0] === v) ? v : d);
   const col = (v, d) => (typeof v === 'string' && HEX.test(v) ? v.toLowerCase() : d);
-  return {
+  const out = {
     id: typeof f.id === 'string' && /^[\w-]{1,40}$/.test(f.id) ? f.id : uid(),
     name: cleanName(f.name) || '무명',
+    art: cleanName(f.art, 10),
+    motto: cleanName(f.motto, 24),
+    seal: sealEncode(sealDecode(f.seal)),
     style: STYLE_KEYS.includes(f.style) ? f.style : 'kungfu',
     stats,
     look: {
@@ -487,6 +720,8 @@ function sanitizeFighter(f) {
       hairColor: col(lk.hairColor, '#1d1a1f'),
     },
   };
+  out.moves = cleanMoves(f.moves, out.style, out.look.build);
+  return out;
 }
 function randomFighter() {
   const stats = { pow: 1, spd: 1, hp: 1, tec: 1 };
@@ -520,26 +755,66 @@ const NOIN = { l: 0, r: 0, u: 0, g: 0, p: 0, k: 0, s: 0 };
 const ACTIONABLE = { idle: 1, walk: 1, guard: 1 };
 const GRABBABLE = { idle: 1, walk: 1, guard: 1, hit: 1, block: 1, atk: 1 };
 
-function makeMoves(style, s) {
+// A recorded move, played back on the fight clock. Only the stretch where the hand/foot moves fast
+// can hit; power grows with how far it has been travelling fast; the swing direction decides the
+// result (upward launches, downward knocks down, sideways pushes).
+function buildRec(A, key, stance, Bd, spd, dmgM) {
+  const fr = A.fr, n = fr.length, total = Math.max(3, Math.round((n - 1) * REC_STEP / spd));
+  const poses = [], ends = [];
+  for (let t = 0; t <= total; t++) {
+    const u = t / total * (n - 1), i = Math.min(n - 2, Math.floor(u)), f = u - i, a = fr[i], b = fr[i + 1];
+    const p = clonePose(stance);
+    p.lean = lerp(a[2], b[2], f); p[A.limb] = [lerp(a[0], b[0], f), lerp(a[1], b[1], f)];
+    poses.push(p); ends.push(solve(p, Bd)[A.limb].e);
+  }
+  const base = A.limb[0] === 'l' ? 4.6 : 3.2, hitF = new Array(total + 1).fill(null);
+  let w = -1, gap = 99, path = 0, first = -1, last = -1, maxD = 0, reach = 0, yLo = 999, yHi = -999, closed = false;
+  const kinds = new Set();
+  for (let t = 1; t <= total; t++) {
+    const e0 = ends[t - 1], e1 = ends[t], sp = Math.hypot(e1[0] - e0[0], e1[1] - e0[1]);
+    if (sp < 4) { gap++; continue; }
+    if (gap >= 4) { if (w >= 2) { closed = true; } else { w++; path = 0; } }
+    if (closed) break;
+    gap = 0; path += sp;
+    const t0 = Math.max(0, t - 3), vx = (e1[0] - ends[t0][0]) / (t - t0), vy = (e1[1] - ends[t0][1]) / (t - t0), v = Math.hypot(vx, vy);
+    const dmg = Math.round(base * (0.75 + Math.min(path, 150) / 110) * dmgM * 10) / 10;
+    const m = { rec: 1, dmg, hs: Math.round(12 + dmg * 0.9), bs: Math.round(7 + dmg * 0.6), kb: 1.5 + Math.abs(vx) * 0.3, heavy: dmg >= 7 ? 1 : 0, cancel: 1, call: key, kind: 'push' };
+    if (-vy > 0.6 * v && v >= 4 && -e1[1] > 60) { m.kd = 1; m.launch = 5 + v * 0.45; m.kind = 'up'; }
+    else if (vy > 0.55 * v && dmg >= 5) { m.kd = 1; m.launch = -2; m.kind = 'down'; }
+    kinds.add(m.kind);
+    const box = [Math.min(e0[0], e1[0]) - 16, Math.max(e0[0], e1[0]) + 16, Math.min(-e0[1], -e1[1]) - 16, Math.max(-e0[1], -e1[1]) + 16];
+    hitF[t] = { w, box, m };
+    if (first < 0) first = t;
+    last = t; maxD = Math.max(maxD, dmg); reach = Math.max(reach, box[1] - 16); yLo = Math.min(yLo, box[2] + 16); yHi = Math.max(yHi, box[3] - 16);
+  }
+  const rc = 8 + Math.round(maxD * 1.2), end = poses[total];
+  for (let t = 1; t <= rc; t++) { poses.push(mixPose(end, stance, t / rc)); hitF.push(null); }
+  // the strike "starts" when the hit zone is well out in front, not when the limb first twitches
+  let su = total, main = null;
+  for (let t = 0; t <= total; t++) { const h = hitF[t]; if (h && h.box[1] - 16 >= reach * 0.6) { su = t; break; } }
+  for (let t = 0; t <= total; t++) { const h = hitF[t]; if (h && (!main || h.box[1] > main.box[1])) main = h; }
+  const ac = first < 0 ? 0 : Math.max(1, last - su + 1);
+  return { mainKind: main ? main.m.kind : 'push', rec: 1, key, name: A.name, limb: A.limb, su, ac, rc: poses.length - 1 - su - ac, poses, hitF, next: A.next, cancel: 1,
+    maxD, reach, yLo: first < 0 ? 0 : yLo, yHi: first < 0 ? 0 : yHi, nWin: w + 1, kinds: [...kinds] };
+}
+function slotFor(F, btn, d) { const key = (d > 0 ? 'f' : d < 0 ? 'b' : '') + btn; return F.prm.moves[key] ? key : btn; }
+function makeMoves(def) {
+  const style = def.style, s = def.stats, mv = def.moves || cleanMoves(null, style, def.look.build), Bd = dimsOf(def.look.build);
   const powM = 0.8 + 0.1 * s.pow;
   const spd = 0.85 + 0.075 * s.spd;
   const spM = 0.9 + 0.05 * s.tec;
   const styM = style === 'wrestler' ? 1.12 : style === 'ninja' ? 0.9 : 1;
-  const fs = v => Math.max(2, Math.round(v / spd));
   const B = {
-    p1: { su: fs(4), ac: 3, rc: fs(8),  dmg: 4, hb: [16, 80, 92, 130],  hs: 14, bs: 9,  kb: 2.4, next: 'p2', cancel: 1, pose: ['idle', 'jab'] },
-    p2: { su: fs(5), ac: 3, rc: fs(10), dmg: 5, hb: [16, 86, 92, 130],  hs: 15, bs: 10, kb: 3,   next: 'p3', cancel: 1, pose: ['idle', 'cross'] },
-    p3: { su: fs(7), ac: 4, rc: fs(17), dmg: 8, hb: [16, 84, 84, 136],  hs: 20, bs: 12, kb: 6, kd: 1, launch: 7, cancel: 1, heavy: 1, pose: ['windup', 'hook'] },
-    k:  { su: fs(8), ac: 4, rc: fs(15), dmg: 8, hb: [22, 104, 58, 120], hs: 18, bs: 12, kb: 5, cancel: 1, heavy: 1, pose: ['chamber', 'kick'] },
     ap: { su: 3, ac: 9, rc: 3,   dmg: 5, hb: [8, 74, 64, 118], hs: 15, bs: 9,  kb: 3, air: 1, pose: ['jump', 'apunch'] },
     ak: { su: 4, ac: 16, rc: 3,  dmg: 7, hb: [6, 82, 4, 66],   hs: 17, bs: 11, kb: 4, air: 1, heavy: 1, pose: ['jump', 'akick'] },
   };
-  switch (style) {
-    case 'boxer': B.p1.dmg += 1; B.p2.dmg += 1; B.p3.dmg += 1.5; B.p1.su = Math.max(3, B.p1.su - 1); B.k.dmg -= 1; B.p3.hb = [16, 90, 84, 140]; break;
-    case 'tkd': B.k.hb = [22, 124, 62, 132]; B.k.dmg += 2; B.k.su = Math.max(4, B.k.su - 1); B.k.pose = ['chamber', 'hkick']; B.ak.dmg += 2; B.ak.hb = [6, 94, 4, 70]; break;
-    case 'wrestler': B.p1.su += 1; B.p2.su += 1; B.p3.dmg += 2; B.k.kb = 7; break;
-    case 'kungfu': B.ap.dmg += 1; B.k.hs += 2; break;
-    case 'ninja': B.p1.rc = Math.max(4, B.p1.rc - 2); B.p2.rc = Math.max(5, B.p2.rc - 2); B.ak.su = 3; break;
+  if (style === 'tkd') { B.ak.dmg += 2; B.ak.hb = [6, 94, 4, 70]; }
+  if (style === 'kungfu') B.ap.dmg += 1;
+  for (const key of SLOT_KEYS) {
+    const A = mv.arts[key];
+    if (!A) continue;
+    const boost = (A.limb[0] === 'a' && style === 'boxer') || (A.limb[0] === 'l' && style === 'tkd') ? 1.15 : 1;
+    B[key] = buildRec(A, key, mv.stance, Bd, spd, powM * styM * boost);
   }
   const SP = {
     boxer:    { su: 3, ac: 12, rc: 16, dmg: 15, hb: [0, 66, 60, 178], hs: 30, bs: 16, kb: 2.5, kd: 1, launch: 11, invul: [0, 9], lift: { at: 3, vy: 12.5, vx: 2.4 }, heavy: 1, pose: ['crouch', 'upper'] },
@@ -548,11 +823,13 @@ function makeMoves(style, s) {
     kungfu:   { su: 13, ac: 2, rc: 18, dmg: 0, proj: { vx: 8.6, dmg: 12, h: 106, r: 20, hs: 22, bs: 14, kb: 6, heavy: 1, isSp: 1 }, pose: ['charge', 'palm'] },
     ninja:    { su: 10, ac: 6, rc: 16, dmg: 14, hb: [-52, 76, 30, 152], hs: 24, bs: 14, kb: 4, kd: 1, launch: 8, invul: [0, 13], tele: 8, heavy: 1, pose: ['crouch', 'slash'] },
   }[style];
-  B.sp = Object.assign({ isSp: 1 }, SP);
+  B.sp = Object.assign({ isSp: 1, call: 'sp' }, SP);
+  if (B.sp.proj) B.sp.proj = Object.assign({ call: 'sp' }, B.sp.proj);
   const D = (v, m) => Math.max(1, Math.round(v * powM * styM * m * 10) / 10);
   for (const k in B) {
     const M = B[k];
-    if (M.dmg) M.dmg = D(M.dmg, k === 'sp' ? spM : 1);
+    if (M.rec) continue;
+    if (M.dmg) M.dmg = k === 'sp' || M.air ? D(M.dmg, k === 'sp' ? spM : 1) : Math.max(1, Math.round(M.dmg * powM * styM * 10) / 10);
     if (M.proj) M.proj = Object.assign({}, M.proj, { dmg: D(M.proj.dmg, spM) });
   }
   return B;
@@ -567,7 +844,9 @@ function buildParams(def) {
     tecM: 0.7 + 0.15 * s.tec,
     walk: 3.3 * spd * (style === 'ninja' ? 1.12 : style === 'wrestler' ? 0.86 : 1),
     jumpV: style === 'ninja' ? 17.6 : style === 'wrestler' ? 15.2 : 16.2,
-    moves: makeMoves(style, s),
+    moves: makeMoves(def),
+    stance: def.moves ? def.moves.stance : POSE.idle,
+    guard: def.moves ? def.moves.guard : POSE.guard,
   };
 }
 function mkFighter(def, idx) {
@@ -575,16 +854,16 @@ function mkFighter(def, idx) {
   return {
     idx, def, prm, x: idx ? 630 : 330, y: 0, vx: 0, vy: 0, face: idx ? -1 : 1, hp: prm.maxHp, meter: 0,
     st: 'idle', t: 0, mv: null, mvStart: -1, hitMask: 0, connected: false, stun: 0, inv: 0,
-    combo: 0, comboT: 99, buf: { p: 0, k: 0, s: 0 }, wins: 0, airAtk: false, jug: 0, jumps: 0,
+    combo: 0, comboT: 99, buf: { p: 0, k: 0, s: 0 }, bufDir: { p: 0, k: 0 }, chainN: 0, lastHitT: -99, wins: 0, airAtk: false, jug: 0, jumps: 0,
     gHeld: false, maxCombo: 0, tAdv: 0, rx: null, ry: null,
   };
 }
 
 const PH = ['intro', 'fight', 'ko', 'timeup', 'end'];
 const ANN_K = ['round', 'fight', 'ko', 'time', 'win', 'draw'];
-const EV_T = ['hit', 'hhit', 'block', 'sp', 'ko', 'dust', 'grab', 'proj', 'clash', 'ann', 'swing', 'tele'];
+const EV_T = ['hit', 'hhit', 'block', 'sp', 'ko', 'dust', 'grab', 'proj', 'clash', 'ann', 'swing', 'tele', 'call'];
 const ST_L = ['idle', 'walk', 'jump', 'guard', 'atk', 'hit', 'block', 'air', 'down', 'rise', 'grabbed', 'slam', 'ko', 'win'];
-const MV_L = [null, 'p1', 'p2', 'p3', 'k', 'ap', 'ak', 'sp'];
+const MV_L = [null, 'p', 'k', 'fp', 'fk', 'bp', 'bk', 'ap', 'ak', 'sp'];
 
 function newGame(defs, stage) {
   const G = {
@@ -602,7 +881,7 @@ function setSt(F, st) { if (F.st !== st) { F.st = st; F.t = 0; } }
 function resetRound(G) {
   G.F.forEach((F, i) => Object.assign(F, {
     x: i ? 630 : 330, y: 0, vx: 0, vy: 0, face: i ? -1 : 1, hp: F.prm.maxHp, st: 'idle', t: 0, mv: null,
-    inv: 0, stun: 0, combo: 0, comboT: 99, buf: { p: 0, k: 0, s: 0 }, airAtk: false, jug: 0,
+    inv: 0, stun: 0, combo: 0, comboT: 99, buf: { p: 0, k: 0, s: 0 }, bufDir: { p: 0, k: 0 }, chainN: 0, airAtk: false, jug: 0,
   }));
   G.P = []; G.timer = TIME; G.phase = 'intro'; G.pt = 0; G.koWinner = -1;
   announce(G, 'round', G.round);
@@ -612,8 +891,9 @@ function step(G, inputs) {
   G.frame++;
   for (let i = 0; i < 2; i++) {
     const F = G.F[i], I = inputs[i];
-    if (I.p) F.buf.p = 9;
-    if (I.k) F.buf.k = 9;
+    const dirRel = ((I.r ? 1 : 0) - (I.l ? 1 : 0)) * F.face;
+    if (I.p) { F.buf.p = 9; F.bufDir.p = dirRel; }
+    if (I.k) { F.buf.k = 9; F.bufDir.k = dirRel; }
     if (I.s) F.buf.s = 9;
     F.gHeld = !!I.g;
   }
@@ -648,8 +928,9 @@ function step(G, inputs) {
   pushApart(G);
 }
 
-function startMove(G, F, key) {
+function startMove(G, F, key, chain) {
   const M = F.prm.moves[key];
+  if (!chain) F.chainN = 0;
   F.st = 'atk'; F.mv = key; F.t = 0; F.hitMask = 0; F.connected = false; F.mvStart = G.frame;
   F.buf.p = F.buf.k = F.buf.s = 0;
   if (!M.air) F.vx = 0;
@@ -667,8 +948,8 @@ function updFighter(G, F, O, inp, ctrl) {
       if (Math.abs(O.x - F.x) > 2) F.face = O.x > F.x ? 1 : -1;
       if (!ctrl) { F.vx = 0; setSt(F, 'idle'); break; }
       if (F.buf.s && F.meter >= SP_COST) { startMove(G, F, 'sp'); break; }
-      if (F.buf.p) { startMove(G, F, 'p1'); break; }
-      if (F.buf.k) { startMove(G, F, 'k'); break; }
+      if (F.buf.p) { startMove(G, F, slotFor(F, 'p', F.bufDir.p)); break; }
+      if (F.buf.k) { startMove(G, F, slotFor(F, 'k', F.bufDir.k)); break; }
       const d = (inp.r ? 1 : 0) - (inp.l ? 1 : 0);
       if (inp.u) { setSt(F, 'jump'); F.vy = P.jumpV; F.vx = d * P.walk * 1.25; F.airAtk = false; F.jumps++; break; }
       if (inp.g) { setSt(F, 'guard'); F.vx = 0; break; }
@@ -731,9 +1012,13 @@ function runMove(G, F, O) {
   }
   if (M.grab && t >= M.su && t < M.su + M.ac) tryGrab(G, F, O, M);
   if (F.st !== 'atk') return;   // grab connected
-  if (F.connected && t >= M.su + M.ac - 1) {
+  if (F.connected && (M.rec ? t > F.lastHitT + 1 : t >= M.su + M.ac - 1)) {
     if (M.cancel && F.buf.s && F.meter >= SP_COST && F.y <= 0) { startMove(G, F, 'sp'); return; }
-    if (M.next && F.buf.p) { startMove(G, F, M.next); return; }
+    if (M.rec && F.chainN < 4) for (const btn of ['p', 'k']) {
+      if (!F.buf[btn]) continue;
+      const key = slotFor(F, btn, F.bufDir[btn]);
+      if (M.next.includes(key)) { F.chainN++; startMove(G, F, key, true); return; }
+    }
   }
   if (M.air) {
     if (F.y <= 0 && t > 1) { setSt(F, 'idle'); F.mv = null; F.vx = 0; ev(G, 'dust', F.x, 0, 0); }
@@ -767,6 +1052,7 @@ function runSlam(G, F, O) {
       damage(G, F, O, F.slamDmg, true, true);
       if (O.hp > 0) { G.hitstop = 10; }
       ev(G, 'hhit', O.x, 30, 0);
+      ev(G, 'call', F.x, 190, F.idx * 10 + 7);
     }
   }
   if (t >= 40) setSt(F, 'idle');
@@ -775,6 +1061,12 @@ function runSlam(G, F, O) {
 function activeHit(F) {
   if (F.st !== 'atk' || !F.mv) return null;
   const M = F.prm.moves[F.mv];
+  if (M.rec) {
+    const h = M.hitF[F.t];
+    if (!h || (F.hitMask & (1 << h.w))) return null;
+    const xa = F.x + F.face * h.box[0], xb = F.x + F.face * h.box[1];
+    return { M: h.m, i: h.w, box: { x0: Math.min(xa, xb), x1: Math.max(xa, xb), y0: F.y + h.box[2], y1: F.y + h.box[3] } };
+  }
   if (M.grab || M.proj || !M.hb) return null;
   const t = F.t;
   let i = -1;
@@ -825,8 +1117,8 @@ function koStart(G, winnerIdx) {
 }
 
 function applyHit(G, A, D, M, i, box, dir, isProj) {
-  if (!isProj) { A.hitMask |= (1 << i); A.connected = true; }
-  const nHits = M.hits ? M.hits.length : 1, last = i === nHits - 1;
+  if (!isProj) { A.hitMask |= (1 << i); A.connected = true; A.lastHitT = A.t; }
+  const nHits = M.hits ? M.hits.length : 1, last = M.rec ? true : i === nHits - 1;
   const hy = clamp(((box ? Math.max(box.y0, D.y) : D.y + 100) + (box ? Math.min(box.y1, D.y + 150) : D.y + 110)) / 2, D.y + 25, D.y + 145);
   const hx = D.x - dir * 18;
   const blocking = !M.unblock && D.y <= 0 && (D.st === 'guard' || D.st === 'block' || (ACTIONABLE[D.st] && D.gHeld));
@@ -854,6 +1146,7 @@ function applyHit(G, A, D, M, i, box, dir, isProj) {
     G.hitstop = M.heavy ? 8 : 5;
   }
   ev(G, M.heavy || !last ? 'hhit' : 'hit', hx, hy, 0);
+  if (M.call && (M.rec ? i === 0 : last)) ev(G, 'call', D.x, D.y + 182, A.idx * 10 + (M.call === 'sp' ? 7 : SLOT_KEYS.indexOf(M.call) + 1));
 }
 
 function updProj(G, live) {
@@ -984,15 +1277,14 @@ class Cpu {
       this.seenJump = op.jumps;
       if (free && dist < 240 && Math.random() < L.aa) {
         if (me.def.style === 'boxer' && me.meter >= SP_COST) this.plan = [{ n: rint(9, 14) }, { n: 1, s: 1 }, { n: 10 }];
-        else this.plan = Math.random() < 0.6 ? [{ n: rint(12, 18) }, { n: 1, k: 1 }, { n: 12 }] : [{ n: 30, g: 1 }];
+        else { const ap = Math.random() < 0.6 && this.artPlan(me, Math.min(dist, 90), true); this.plan = ap ? [{ n: rint(10, 16) }].concat(ap) : [{ n: 30, g: 1 }]; }
       }
     }
     if (free && this.punishFor === op.mvStart && op.st === 'atk' && op.mv && dist < 115) {
       const M = op.prm.moves[op.mv];
       if (op.t > M.su + M.ac && M.su + M.ac + M.rc - op.t > 4) {
         this.punishFor = -1;
-        this.plan = [{ n: 1, p: 1 }, { n: 6 }, { n: 1, p: 1 }, { n: 7 }, { n: 1, p: 1 }, { n: 10 }];
-        if (me.meter >= SP_COST && Math.random() < L.sp) this.plan.splice(4, 2, { n: 1, s: 1 }, { n: 10 });
+        this.plan = this.artPlan(me, dist) || [{ n: 1, p: 1 }, { n: 12 }];
       }
     }
     if (this.plan.length) {
@@ -1013,6 +1305,18 @@ class Cpu {
     this.decide(G, me, op, dist);
     return o;
   }
+  // press the command for one of this fighter's own moves, then maybe follow its combo route
+  artPlan(me, dist, high) {
+    const keys = SLOT_KEYS.filter(k => { const M = me.prm.moves[k]; return M && M.ac > 0 && M.reach + 27 >= dist - 6 && M.yLo < 150; });
+    if (!keys.length) return null;
+    const key = high ? keys.sort((a, b) => me.prm.moves[b].yHi - me.prm.moves[a].yHi)[0] : pick(keys);
+    const press = k => { const st = { n: 1 }; st[k.slice(-1)] = 1; if (k[0] === 'f') st.f = 1; if (k[0] === 'b') st.b = 1; return st; };
+    const M = me.prm.moves[key], plan = [press(key), { n: M.su + M.ac }];
+    const nx = M.next.filter(k => me.prm.moves[k]);
+    if (nx.length && Math.random() < this.L.aggr) { const k2 = pick(nx), M2 = me.prm.moves[k2]; plan.push(press(k2), { n: M2.su + M2.ac + M2.rc }); }
+    else plan.push({ n: M.rc + 2 });
+    return plan;
+  }
   decide(G, me, op, dist) {
     const L = this.L, R = Math.random, canSp = me.meter >= SP_COST, st = me.def.style;
     if (R() < L.idle) { this.plan = [{ n: rint(8, 24) }]; return; }
@@ -1028,18 +1332,17 @@ class Cpu {
       this.plan = [{ n: rint(10, 26), f: 1 }]; return;
     }
     if (dist > 105) {
-      if (R() < L.aggr * 0.6) { this.plan = R() < 0.5 ? [{ n: rint(4, 10), f: 1 }, { n: 1, k: 1 }, { n: 18 }] : [{ n: rint(10, 18), f: 1 }]; return; }
+      const ap = R() < L.aggr * 0.6 && this.artPlan(me, dist);
+      if (ap) { this.plan = ap; return; }
+      if (R() < L.aggr * 0.5) { this.plan = [{ n: rint(10, 18), f: 1 }]; return; }
       if (R() < 0.3) { this.plan = [{ n: rint(8, 16), b: 1 }]; return; }
       this.plan = [{ n: rint(6, 14), f: 1 }]; return;
     }
     if (R() < L.aggr) {
-      const r = R();
-      if (r < 0.5) {
-        this.plan = [{ n: 1, p: 1 }, { n: 7 }, { n: 1, p: 1 }, { n: 8 }, { n: 1, p: 1 }, { n: 14 }];
-        if (canSp && R() < L.sp * 0.6) this.plan.splice(4, 2, { n: 1, s: 1 }, { n: 14 });
-      } else if (r < 0.82) {
-        this.plan = canSp && R() < L.sp * 0.5 ? [{ n: 1, k: 1 }, { n: 12 }, { n: 1, s: 1 }, { n: 14 }] : [{ n: 1, k: 1 }, { n: 20 }];
-      } else this.plan = [{ n: 1, u: 1, b: R() < 0.5 ? 1 : 0 }, { n: 30 }];
+      const ap = R() < 0.85 && this.artPlan(me, dist);
+      if (ap) { if (canSp && R() < L.sp * 0.4) ap.splice(2, ap.length - 2, { n: 1, s: 1 }, { n: 14 }); this.plan = ap; }
+      else if (R() < 0.5) this.plan = [{ n: rint(6, 12), f: 1 }];
+      else this.plan = [{ n: 1, u: 1, b: R() < 0.5 ? 1 : 0 }, { n: 30 }];
       return;
     }
     this.plan = R() < 0.6 ? [{ n: rint(14, 28), g: 1 }] : [{ n: rint(10, 18), b: 1 }];
@@ -1179,29 +1482,31 @@ function walkPose(t) {
   return { lean: 10, aF: [50 + s * 6, 95], aB: [28 - s * 6, 112], lF: [18 + s * 20, -16 - Math.max(0, -s) * 30], lB: [-18 - s * 20, -10 - Math.max(0, s) * 30] };
 }
 function poseOf(F) {
-  const t = F.t;
+  const t = F.t, stance = (F.prm && F.prm.stance) || POSE.idle, guard = (F.prm && F.prm.guard) || POSE.guard;
   switch (F.st) {
-    case 'idle': { const p = Object.assign({}, POSE.idle); p.drop = 1.5 + Math.sin(t * 0.09) * 1.5; return { p }; }
-    case 'walk': return { p: walkPose(t) };
+    case 'idle': { const p = Object.assign({}, stance); p.drop = (p.drop || 0) + 1.5 + Math.sin(t * 0.09) * 1.5; return { p }; }
+    case 'walk': return { p: mixPose(stance, walkPose(t), 0.75) };
     case 'jump': return { p: POSE.jump };
-    case 'guard': return { p: POSE.guard };
-    case 'block': return { p: POSE.block };
-    case 'hit': return { p: mixPose(POSE.hit, POSE.idle, (t - 6) / 14), mood: 'hurt' };
+    case 'guard': return { p: guard };
+    case 'block': { const p = Object.assign({}, guard); p.lean = (p.lean || 0) - 6; return { p }; }
+    case 'hit': return { p: mixPose(POSE.hit, stance, (t - 6) / 14), mood: 'hurt' };
     case 'air': return { p: POSE.hit, rot: -F.face * Math.min(1.45, 0.25 + t * 0.07), mood: 'hurt' };
     case 'down': return { p: POSE.lie, rot: -F.face * Math.PI / 2, mood: F.hp <= 0 ? 'ko' : 'hurt' };
     case 'ko': return { p: POSE.lie, rot: -F.face * Math.PI / 2, mood: 'ko' };
-    case 'rise': return { p: mixPose(POSE.crouch, POSE.idle, (t - 8) / 8), rot: -F.face * (Math.PI / 2) * (1 - Math.min(1, t / 9)), alpha: t % 4 < 2 ? 0.55 : 1 };
+    case 'rise': return { p: mixPose(POSE.crouch, stance, (t - 8) / 8), rot: -F.face * (Math.PI / 2) * (1 - Math.min(1, t / 9)), alpha: t % 4 < 2 ? 0.55 : 1 };
     case 'grabbed': return { p: POSE.hit, rot: -F.face * 0.5, mood: 'hurt' };
     case 'slam': return { p: t < 18 ? POSE.lift : mixPose(POSE.grab, POSE.idle, (t - 18) / 20) };
-    case 'win': return { p: mixPose(POSE.idle, POSE.win, t / 12) };
+    case 'win': return { p: mixPose(stance, POSE.win, t / 12) };
     case 'atk': {
       const M = F.prm.moves[F.mv];
       if (!M) return { p: POSE.idle };
-      const [wind, strike] = M.pose, base = M.air ? POSE.jump : POSE.idle;
+      if (M.rec) return { p: M.poses[Math.min(t, M.poses.length - 1)], phase: t < M.su ? 'su' : t < M.su + M.ac ? 'ac' : 'rc', M };
+      const base = M.air ? POSE.jump : stance;
+      const PW = M.pw || (M.pose[0] === 'idle' ? base : POSE[M.pose[0]]) || base, PS = M.ph || POSE[M.pose[1]];
       let p, phase;
-      if (t < M.su) { p = mixPose(base, POSE[wind] || base, wind === 'idle' ? 0 : Math.min(1, (t + 1) / Math.max(1, M.su))); phase = 'su'; }
-      else if (t < M.su + M.ac) { p = POSE[strike]; phase = 'ac'; }
-      else { p = M.lift && F.y > 0 ? mixPose(POSE[strike], POSE.jump, (t - M.su - M.ac) / 10) : mixPose(POSE[strike], base, (t - M.su - M.ac) / Math.max(1, M.rc)); phase = 'rc'; }
+      if (t < M.su) { p = mixPose(base, PW, PW === base ? 0 : Math.min(1, (t + 1) / Math.max(1, M.su))); phase = 'su'; }
+      else if (t < M.su + M.ac) { p = PS; phase = 'ac'; }
+      else { p = M.lift && F.y > 0 ? mixPose(PS, POSE.jump, (t - M.su - M.ac) / 10) : mixPose(PS, base, (t - M.su - M.ac) / Math.max(1, M.rc)); phase = 'rc'; }
       const r = { p, phase, M };
       if (M.spin && phase === 'ac') r.face = Math.floor((t - M.su) / 5) % 2 ? -F.face : F.face;
       if (M.tele && t < M.tele) r.alpha = Math.max(0.12, 1 - t / M.tele);
@@ -1261,7 +1566,19 @@ function drawLimb(g, L, w, c1, c2, endR, endCol, foot, footCol) {
   if (tip) strokeLine(g, [L.e, tip], w * 0.75, footCol);
   if (endR) disc(g, L.e, endR, endCol);
 }
+function drawRobotHead(g, J, B, k, mood) {
+  const hx = J.head[0], hy = J.head[1], r = B.head;
+  strokeLine(g, [[hx - 2, hy - r], [hx - 6, hy - r - 12]], 7, INK); strokeLine(g, [[hx - 2, hy - r], [hx - 6, hy - r - 12]], 3, k.body);
+  disc(g, [hx - 6, hy - r - 13], 3.5, k.accent, true);
+  g.beginPath(); g.roundRect ? g.roundRect(hx - r - 1, hy - r, r * 2 + 2, r * 2.05, 7) : g.rect(hx - r - 1, hy - r, r * 2 + 2, r * 2.05);
+  g.fillStyle = k.body; g.fill(); g.lineWidth = 3; g.strokeStyle = INK; g.stroke();
+  const vis = mood === 'ko' ? '#4a4458' : mood === 'hurt' ? '#ff6b5a' : k.accent;
+  g.fillStyle = INK; g.fillRect(hx - r * 0.15, hy - r * 0.42, r * 1.22, r * 0.5);
+  g.fillStyle = vis; g.fillRect(hx - r * 0.05, hy - r * 0.33, r * 1.05, r * 0.32);
+  g.fillStyle = shade(k.body, 0.7); g.fillRect(hx - r * 0.75, hy + r * 0.35, r * 0.5, 3); g.fillRect(hx - r * 0.75, hy + r * 0.55, r * 0.5, 3);
+}
 function drawHead(g, F, J, B, look, style, mood, k) {
+  if (k.robot) { drawRobotHead(g, J, B, k, mood); return; }
   const hx = J.head[0], hy = J.head[1], r = B.head, skin = k.skin, hc = look.hairColor;
   const t = F.t || 0, band = style === 'tkd' || style === 'kungfu' || style === 'ninja';
   if (look.hair === 'pony') {
@@ -1322,17 +1639,18 @@ function drawHead(g, F, J, B, look, style, mood, k) {
 function drawFighter(g, F, opt) {
   opt = opt || {};
   const look = F.def.look, style = F.def.style, B = dimsOf(look.build);
-  const po = poseOf(F), p = po.p, face = po.face || F.face;
+  const po = opt.pose ? { p: opt.pose } : poseOf(F), p = po.p, face = po.face || F.face;
   const J = solve(p, B);
   const sx = F.rx != null ? F.rx : F.x, sy = GY - (F.ry != null ? F.ry : F.y);
-  const skin = SKINS[look.skin], body = look.body, acc = look.accent;
-  const k = { skin, body, accent: acc };
+  const robot = look.outfit === 'robot';
+  const body = look.body, acc = look.accent, skin = robot ? shade(body, 0.82) : SKINS[look.skin];
+  const k = { skin, body, accent: acc, robot };
   const top = look.outfit === 'bare' ? skin : body;
-  const uArm = look.outfit === 'gi' ? body : skin;
+  const uArm = look.outfit === 'gi' || robot ? body : skin;
   const shinC = look.outfit === 'bare' ? skin : body;
-  const footC = style === 'boxer' || style === 'wrestler' || style === 'ninja' ? '#2b2836' : skin;
+  const footC = robot || style === 'boxer' || style === 'wrestler' || style === 'ninja' ? '#2b2836' : skin;
   const gloves = style === 'boxer';
-  const handR = gloves ? 11 : B.hand, handC = gloves ? acc : skin;
+  const handR = gloves ? 11 : B.hand, handC = gloves ? acc : robot ? '#c9ccd8' : skin;
   const dk = c => shade(c, 0.78);
   g.save();
   g.translate(sx, sy);
@@ -1357,14 +1675,17 @@ function drawFighter(g, F, opt) {
     g.beginPath(); g.moveTo(J.neck[0] + J.lc * 3, J.neck[1] + J.ls * 3); g.lineTo(J.hip[0] + J.ls * 10 + J.lc * 6, J.hip[1] - J.lc * 10 + J.ls * 6); g.stroke();
   }
   if (look.outfit !== 'gi') disc(g, J.neck, B.wT * 0.28, skin);
+  if (robot) { disc(g, [J.neck[0] - J.ls * 22 + J.lc * 4, J.neck[1] + J.lc * 22 + J.ls * 4], 4, acc); strokeLine(g, [[J.neck[0] - J.ls * 12, J.neck[1] + J.lc * 12], [J.neck[0] - J.ls * 30, J.neck[1] + J.lc * 30]], 3, shade(body, 0.65)); }
   // belt / waistband
   const bc = [J.hip[0] + J.ls * 6, J.hip[1] - J.lc * 6], hw = B.wT / 2 + 1;
   strokeLine(g, [[bc[0] - J.lc * hw, bc[1] - J.ls * hw], [bc[0] + J.lc * hw, bc[1] + J.ls * hw]], 7, acc);
   if (look.outfit === 'gi') { strokeLine(g, [[bc[0] + J.lc * 4, bc[1] + J.ls * 4], [bc[0] + J.lc * 9, bc[1] + 13]], 4, acc); }
   // front leg, head, front arm
   drawLimb(g, J.lF, B.wL, body, shinC, 0, null, 10, footC);
+  if (robot) disc(g, J.lF.m, 5, acc, true);
   drawHead(g, F, J, B, look, style, po.mood, k);
   drawLimb(g, J.aF, B.wA, uArm, skin, handR, handC);
+  if (robot) disc(g, J.aF.m, 4, acc, true);
   if (style === 'wrestler') disc(g, J.aF.m, B.wA * 0.5, acc);
   // special extras
   if (po.M && po.M === F.prm.moves.sp) {
@@ -1537,6 +1858,15 @@ function fx(e) {
     case 'proj': Sfx.play('proj'); break;
     case 'clash': sparks(x, y, 14, '#bfefff', 9); Sfx.play('block'); break;
     case 'swing': Sfx.play('swing'); break;
+    case 'call': {
+      const f = App.G && App.G.F[Math.floor(e.a / 10)], slot = e.a % 10;
+      if (!f) break;
+      const art = slot >= 1 && slot <= 6 ? f.def.moves.arts[SLOT_KEYS[slot - 1]] : null;
+      const name = slot === 7 ? STYLES[f.def.style].sp : art ? art.name : '';
+      if (!name) break;
+      V.parts.push({ k: 't', x, y, vx: 0, vy: -0.7, r: 0, life: 55, max: 55, text: name, col: PCOL[f.idx] });
+      break;
+    }
     case 'tele': for (let i = 0; i < 10; i++) V.parts.push({ k: 'm', x: x + rnd(-20, 20), y: y + rnd(-60, 60), vx: rnd(-1, 1), vy: rnd(-1.5, 0), r: rnd(8, 16), life: 22, max: 22 }); break;
     case 'ann': { const k = ANN_K[e.a]; if (k === 'round' || k === 'fight' || k === 'time' || k === 'win' || k === 'draw') Sfx.play('ann'); break; }
   }
@@ -1562,6 +1892,10 @@ function drawParts(g) {
     if (p.k === 's') { g.strokeStyle = p.col; g.lineWidth = p.w; g.beginPath(); g.moveTo(p.x, p.y); g.lineTo(p.x - p.vx * 2.4, p.y - p.vy * 2.4); g.stroke(); }
     else if (p.k === 'r') { g.strokeStyle = p.col; g.lineWidth = 3; g.beginPath(); g.arc(p.x, p.y, p.r, 0, Math.PI * 2); g.stroke(); }
     else if (p.k === 'd') { g.fillStyle = 'rgba(236,224,200,.6)'; g.beginPath(); g.arc(p.x, p.y, p.r, 0, Math.PI * 2); g.fill(); }
+    else if (p.k === 't') {
+      g.globalAlpha = Math.min(1, a * 2.5); g.textAlign = 'center'; g.textBaseline = 'middle';
+      outlinedText(g, p.text, p.x, p.y, 28, p.col, 6);
+    }
     else { g.fillStyle = 'rgba(70,58,110,.75)'; g.beginPath(); g.arc(p.x, p.y, p.r, 0, Math.PI * 2); g.fill(); }
   }
   g.globalAlpha = 1;
@@ -1609,6 +1943,8 @@ function drawHUD(g, G) {
     g.fillStyle = INK; g.textAlign = 'center'; g.fillText(tag, tx + tw / 2, ny + 0.5);
     g.textAlign = L ? 'left' : 'right';
     outlinedText(g, nm, L ? bx + tw + 8 : bx + bw - tw - 8, ny + 1, 20, '#f6f2ff', 4);
+    drawSeal(g, F.def, L ? bx + 16 : bx + bw - 16, ny + 32, 30);
+    if (F.def.art) { g.font = '700 13px ' + FONT_B; g.textAlign = L ? 'left' : 'right'; g.lineWidth = 4; g.strokeStyle = INK; const ax = L ? bx + 38 : bx + bw - 38; g.strokeText(F.def.art, ax, ny + 33); g.fillStyle = '#ffc83a'; g.fillText(F.def.art, ax, ny + 33); }
     if (F.meter >= SP_COST) {
       g.font = '700 11px ' + FONT_B; g.fillStyle = '#9ff0ff';
       g.fillText('필살 ×' + Math.floor(F.meter / SP_COST), L ? mx + mw + 8 : mx - 8, my + 5);
@@ -1655,6 +1991,10 @@ function drawHUD(g, G) {
     let fs = size; g.font = fs + 'px ' + FONT_D;
     while (g.measureText(txt).width > 860 && fs > 30) { fs -= 4; g.font = fs + 'px ' + FONT_D; }
     outlinedText(g, txt, 0, 0, fs, G.ann.k === 'ko' ? '#ff6b5a' : '#ffc83a', fs * 0.13);
+    if (G.ann.k === 'round' && G.round === 1) {
+      const an = F => F.def.art || STYLES[F.def.style].name;
+      outlinedText(g, an(G.F[0]) + '  VS  ' + an(G.F[1]), 0, 62, 26, '#f6f2ff', 5);
+    }
     g.restore();
   }
 }
@@ -1695,7 +2035,7 @@ function toast(msg) {
 /* ---------- portraits for cards ---------- */
 const portraitCache = {};
 function portrait(def) {
-  const key = JSON.stringify([def.style, def.look]);
+  const key = JSON.stringify([def.style, def.look, def.moves && def.moves.stance, def.seal, def.art, def.name]);
   if (portraitCache[key]) return portraitCache[key];
   const c = document.createElement('canvas'); c.width = 168; c.height = 168;
   const g = c.getContext('2d');
@@ -1704,6 +2044,8 @@ function portrait(def) {
   g.setTransform(s, 0, 0, s, 84, 168 - 12 - GY * s);
   g.lineCap = 'round'; g.lineJoin = 'round';
   drawFighter(g, F);
+  g.setTransform(1, 0, 0, 1, 0, 0);
+  drawSeal(g, def, 146, 22, 34);
   return (portraitCache[key] = c.toDataURL());
 }
 function fighterCard(def, pressed, extra) {
@@ -1711,7 +2053,7 @@ function fighterCard(def, pressed, extra) {
   b.setAttribute('aria-pressed', pressed ? 'true' : 'false');
   const img = new Image(); img.alt = ''; img.src = portrait(def); b.appendChild(img);
   b.appendChild(el('b', null, def.name));
-  b.appendChild(el('span', null, STYLES[def.style].name + (extra ? ' · ' + extra : '')));
+  b.appendChild(el('span', null, (def.art || STYLES[def.style].name) + (extra ? ' · ' + extra : '')));
   return b;
 }
 function renderPicker(box, selected, onPick, opts) {
@@ -1761,7 +2103,7 @@ function swatches(box, colors, cur, onPick, label) {
 function renderTitle() {
   const f = mySel();
   $('#hero-name').textContent = f.name;
-  $('#hero-style').textContent = STYLES[f.style].name + ' · ' + STYLES[f.style].sp;
+  $('#hero-style').textContent = (f.art || STYLES[f.style].name) + ' · ' + artProfile(f).title;
   $('#btn-sound').textContent = Sfx.on ? '소리 켜짐' : '소리 꺼짐';
 }
 
@@ -1847,6 +2189,12 @@ const Creator = {
     swatches($('#cr-accent'), COLORS, lk.accent, v => { lk.accent = v; this.change(); }, '포인트 색');
     swatches($('#cr-haircolor'), HAIR_COLORS, lk.hairColor, v => { lk.hairColor = v; this.change(); }, '머리 색');
     $('#cr-delete').disabled = this.isNew || roster.length <= 1;
+    const art = $('#cr-art'); if (document.activeElement !== art) art.value = d.art || '';
+    const ml = $('#cr-moves'); ml.replaceChildren();
+    ml.appendChild(el('span', null, '무술'));
+    ml.appendChild(el('b', null, (d.art || '이름 없음') + ' · ' + artProfile(d).title));
+    SLOT_KEYS.forEach(k => { ml.appendChild(el('span', null, SLOT_CMD[k])); ml.appendChild(el('b', null, d.moves.arts[k] ? d.moves.arts[k].name : '—')); });
+    ml.appendChild(el('span', null, '필살기')); ml.appendChild(el('b', null, STYLES[d.style].sp));
   },
   save() {
     const f = sanitizeFighter(this.draft);
@@ -1865,6 +2213,358 @@ const Creator = {
     if (!getDef(selId)) selId = roster[0].id;
     saveRoster(); this.load(mySel(), false); toast('삭제했어요');
   },
+};
+
+/* ---------- my martial art workshop: art · stance · moves · book ---------- */
+const LAB_TABS = [['art', '① 무술'], ['pose', '② 자세'], ['move', '③ 초식'], ['book', '④ 비급']];
+const POSE_SLOTS = [['stance', '기본 자세'], ['guard', '막기 자세']];
+const KIND_L = { up: '띄우기', down: '내려찍기', push: '밀어치기' };
+const KIND_C = { up: '#7ce8ff', down: '#ff6b5a', push: '#ffc83a' };
+const LAB_DUMMY = 90;
+const heightLabel = h => (h < 10 ? '바닥' : h < 55 ? '하단' : h < 110 ? '중단' : h < 150 ? '상단' : '머리 위');
+function drawSeal(g, def, cx, cy, size) {
+  const x = cx - size / 2, y = cy - size / 2, strokes = sealDecode(def.seal);
+  g.save();
+  g.fillStyle = '#f6ecd9'; g.strokeStyle = '#c8322b'; g.lineWidth = Math.max(1.5, size * 0.07);
+  g.beginPath(); if (g.roundRect) g.roundRect(x, y, size, size, size * 0.14); else g.rect(x, y, size, size); g.fill(); g.stroke();
+  g.lineCap = 'round'; g.lineJoin = 'round';
+  if (strokes.length) {
+    g.lineWidth = Math.max(1.4, size * 0.065);
+    const m = v => size * 0.13 + v * size * 0.74 / 63;
+    for (const st of strokes) {
+      g.beginPath(); g.moveTo(x + m(st[0][0]), y + m(st[0][1]));
+      if (st.length === 1) g.lineTo(x + m(st[0][0]) + 0.5, y + m(st[0][1]));
+      for (const q of st) g.lineTo(x + m(q[0]), y + m(q[1]));
+      g.stroke();
+    }
+  } else {
+    const ch = Array.from((def.art || def.name || '?').trim())[0] || '?';
+    g.fillStyle = '#c8322b'; g.font = Math.round(size * 0.6) + 'px ' + FONT_D; g.textAlign = 'center'; g.textBaseline = 'middle';
+    g.fillText(ch, cx, cy + size * 0.04);
+  }
+  g.restore();
+}
+// read a fighter's recorded moves and describe the martial art they add up to
+function artProfile(def) {
+  const P = buildParams(def), moves = SLOT_KEYS.map(k => ({ key: k, A: def.moves.arts[k], M: P.moves[k] }));
+  const live = moves.filter(m => m.M && m.M.ac > 0);
+  const avg = f => (live.length ? live.reduce((a, m) => a + f(m.M), 0) / live.length : 0);
+  const hAvg = avg(M => (M.yLo + M.yHi) / 2), rAvg = avg(M => M.reach), sAvg = avg(M => M.su), dAvg = avg(M => M.maxD);
+  const edges = moves.reduce((a, m) => a + (m.A ? m.A.next.filter(k => def.moves.arts[k]).length : 0), 0);
+  const ups = live.filter(m => m.M.mainKind === 'up').length, downs = live.filter(m => m.M.mainKind === 'down').length;
+  const lo = Math.min(...live.map(m => m.M.yLo), 999), hi = Math.max(...live.map(m => m.M.yHi), 0);
+  const zone = hAvg > 115 ? '상단' : hAvg < 60 ? '하단' : '중단';
+  const dist = rAvg > 95 ? '원거리' : rAvg < 60 ? '근거리' : '중거리';
+  const tempo = sAvg < 7 ? '속공' : sAvg > 11 ? '강공' : '균형';
+  const type = edges >= 6 ? '연환형' : ups >= 2 ? '공중형' : downs >= 2 ? '낙하형' : live.length >= 5 ? '다재형' : '정통형';
+  return {
+    title: live.length ? zone + ' · ' + dist + ' · ' + tempo + ' ' + type : '아직 초식이 없어요',
+    axes: [['위력', clamp(dAvg / 10, 0, 1)], ['속도', clamp(1 - (sAvg - 3) / 14, 0, 1)], ['사거리', clamp(rAvg / 130, 0, 1)], ['높이 폭', clamp((hi - lo) / 170, 0, 1)], ['연계', clamp(edges / 8, 0, 1)]],
+    moves,
+  };
+}
+function radarSVG(axes) {
+  const NS = 'http://www.w3.org/2000/svg', svg = document.createElementNS(NS, 'svg'), c = 120, R = 78;
+  svg.setAttribute('viewBox', '0 0 240 240'); svg.setAttribute('role', 'img'); svg.setAttribute('aria-label', '무술 성향 그래프');
+  const pt = (i, r) => { const a = -Math.PI / 2 + i * 2 * Math.PI / axes.length; return [c + Math.cos(a) * r, c + Math.sin(a) * r]; };
+  const mk = (tag, attrs) => { const e = document.createElementNS(NS, tag); for (const k in attrs) e.setAttribute(k, attrs[k]); svg.appendChild(e); return e; };
+  for (const f of [0.33, 0.66, 1]) mk('polygon', { points: axes.map((_, i) => pt(i, R * f).join(',')).join(' '), fill: 'none', stroke: 'rgba(43,29,18,.22)', 'stroke-width': 1 });
+  axes.forEach((_, i) => { const q = pt(i, R); mk('line', { x1: c, y1: c, x2: q[0], y2: q[1], stroke: 'rgba(43,29,18,.18)' }); });
+  mk('polygon', { points: axes.map((a, i) => pt(i, R * Math.max(0.06, a[1])).join(',')).join(' '), fill: 'rgba(200,50,43,.28)', stroke: '#c8322b', 'stroke-width': 2.5, 'stroke-linejoin': 'round' });
+  axes.forEach((a, i) => { const q = pt(i, R + 22); const t = mk('text', { x: q[0], y: q[1] + 4, 'text-anchor': 'middle', 'font-size': 13, 'font-weight': 700, fill: '#2b1d12' }); t.textContent = a[0]; });
+  return svg;
+}
+function renderBook(box, def) {
+  const pr = artProfile(def);
+  box.replaceChildren();
+  const book = el('div', 'book');
+  const head = el('div', 'book-head'), sc = document.createElement('canvas');
+  sc.width = 168; sc.height = 168; sc.setAttribute('aria-hidden', 'true');
+  drawSeal(sc.getContext('2d'), def, 84, 84, 150);
+  head.appendChild(sc);
+  const hd = el('div');
+  hd.appendChild(el('p', 'book-kicker', '비급 · 창시자 ' + def.name));
+  hd.appendChild(el('h3', 'book-title', def.art || def.name + '류'));
+  hd.appendChild(el('p', 'book-motto', def.motto ? '“' + def.motto + '”' : '가르침을 아직 적지 않았어요'));
+  head.appendChild(hd); book.appendChild(head);
+  book.appendChild(el('p', 'book-type', pr.title));
+  const grid = el('div', 'book-grid');
+  grid.appendChild(radarSVG(pr.axes));
+  const ul = el('ul', 'book-moves');
+  for (const { key, A, M } of pr.moves) {
+    const li = el('li', A ? '' : 'empty');
+    li.appendChild(el('span', 'cmd', SLOT_CMD[key]));
+    li.appendChild(el('b', null, A ? A.name : '비어 있음'));
+    let meta = '녹화하지 않은 칸이에요';
+    if (A && M) {
+      meta = M.ac > 0 ? KIND_L[M.mainKind] + ' · 위력 ' + M.maxD.toFixed(1) + ' · ' + M.su + '프레임' : '타격 구간 없음';
+      const nx = A.next.filter(k => def.moves.arts[k]).map(k => def.moves.arts[k].name);
+      if (nx.length) meta += ' · 이어서 ' + nx.join(', ');
+    }
+    li.appendChild(el('span', 'meta', meta));
+    ul.appendChild(li);
+  }
+  grid.appendChild(ul); book.appendChild(grid);
+  book.appendChild(el('p', 'book-foot', '필살기 · ' + STYLES[def.style].sp + ' (' + STYLES[def.style].name + ' 계열)'));
+  box.appendChild(book);
+}
+
+const Lab = {
+  tab: 'art', poseSlot: 'stance', slot: 'p', limbPick: null, drag: null, rec: null, recT: null, anim: null, F: null, trail: null, seal: null, sealDraw: null,
+  get d() { return Creator.draft; },
+  B() { return dimsOf(this.d.look.build); },
+  open(tab) { if (tab) this.tab = tab; this.anim = this.rec = this.drag = null; this.F = mkFighter(this.d, 0); this.seal = sealDecode(this.d.seal); show('moves'); this.render(); },
+  rebuild() { this.F.def = this.d; this.F.prm = buildParams(this.d); this.trail = null; },
+  render() {
+    chips($('#ml-tab'), LAB_TABS, this.tab, v => { this.tab = v; this.anim = this.rec = this.drag = null; this.render(); });
+    $('#ml-p-art').hidden = this.tab !== 'art';
+    $('#ml-p-body').hidden = this.tab !== 'pose' && this.tab !== 'move';
+    $('#ml-p-book').hidden = this.tab !== 'book';
+    this.rebuild();
+    if (this.tab === 'art') { const a = $('#ml-art'), m = $('#ml-motto'); if (document.activeElement !== a) a.value = this.d.art || ''; if (document.activeElement !== m) m.value = this.d.motto || ''; }
+    else if (this.tab === 'book') renderBook($('#ml-p-book'), this.d);
+    else this.renderBody();
+  },
+  renderBody() {
+    const sub = $('#ml-sub'), tools = $('#ml-tools'), side = $('#ml-side');
+    tools.replaceChildren(); side.replaceChildren();
+    const tool = (label, fn, cls) => { const b = el('button', 'btn' + (cls ? ' ' + cls : ''), label); b.type = 'button'; b.addEventListener('click', () => { fn(); Sfx.play('ui'); }); tools.appendChild(b); return b; };
+    const sec = (label) => { const s = el('div', 'sec'); s.appendChild(el('span', 'label', label)); side.appendChild(s); return s; };
+    if (this.tab === 'pose') {
+      chips(sub, POSE_SLOTS, this.poseSlot, v => { this.poseSlot = v; this.render(); });
+      tool('앞뒤 바꾸기', () => this.mirror());
+      tool('처음 자세로', () => { this.d.moves[this.poseSlot] = clonePose(this.poseSlot === 'stance' ? POSE.idle : POSE.guard); this.render(); }, 'ghost');
+      side.appendChild(el('p', 'hint', this.poseSlot === 'stance'
+        ? '싸울 때 서 있는 자세예요. 모든 초식이 이 자세에서 시작해서 이 자세로 돌아와요. 자세를 바꾸면 초식도 이 자세 기준으로 다시 계산돼요.'
+        : '막기 버튼을 누르고 있을 때의 자세예요.'));
+      side.appendChild(el('p', 'hint', '노란 동그라미는 앞손·앞발, 흰 동그라미는 뒷손·뒷발, 파란 동그라미는 머리(기울기)와 허리(낮추기)예요.'));
+      return;
+    }
+    const arts = this.d.moves.arts;
+    chips(sub, SLOT_KEYS.map(k => [k, SLOT_CMD[k] + (arts[k] ? '' : ' · 빈칸')]), this.slot, v => { this.slot = v; this.limbPick = null; this.anim = null; this.render(); });
+    const A = arts[this.slot];
+    if (A) { tool('▶ 재생', () => this.play(false)); tool('느리게', () => this.play(true)); }
+    if (A && this.slot !== 'p' && this.slot !== 'k') tool('초식 지우기', () => { arts[this.slot] = null; this.render(); }, 'ghost');
+    if (!A || this.slot === 'p' || this.slot === 'k') tool('본보기 초식', () => { const prev = arts[this.slot]; arts[this.slot] = defaultArt(this.slot, this.d.style, this.d.moves.stance, this.B()); if (prev) arts[this.slot].next = prev.next; this.render(); this.play(false); }, A ? 'ghost' : '');
+    side.appendChild(el('p', 'hint', '위 화면 아무 곳이나 누른 채 손가락을 움직이면, 고른 손이나 발이 손가락을 따라 움직이고 그게 그대로 초식이 돼요 (최대 1.2초). 빠르게 휘두른 구간만 맞고, 오래 빠르게 휘두를수록 세져요. 위로 올려치면 띄우고, 아래로 내려찍으면 넘어뜨려요.'));
+    const ls = sec('녹화할 부위'), lc = el('div', 'chips'); ls.appendChild(lc);
+    chips(lc, LIMBS, this.recLimb(), v => { this.limbPick = v; this.render(); });
+    if (!A) { side.appendChild(el('p', 'hint warn', '빈칸이에요. 녹화하거나 본보기 초식으로 채우세요. 빈칸 명령은 기본 펀치·킥이 대신 나가요.')); return; }
+    const ns = el('div', 'sec'), lab = el('label', 'label', '초식 이름 (최대 10자)'); lab.htmlFor = 'ml-name';
+    const inp = el('input', 'text-in'); inp.id = 'ml-name'; inp.type = 'text'; inp.maxLength = 10; inp.spellcheck = false; inp.value = A.name;
+    inp.addEventListener('input', () => { A.name = inp.value.slice(0, 10); });
+    ns.appendChild(lab); ns.appendChild(inp); side.appendChild(ns);
+    const cs = sec('맞히면 이어서 쓸 수 있는 초식 (연계)'), cc = el('div', 'chips multi'); cs.appendChild(cc);
+    for (const k of SLOT_KEYS) {
+      if (!arts[k]) continue;
+      const b = el('button', 'chip', SLOT_CMD[k] + ' · ' + arts[k].name); b.type = 'button';
+      b.setAttribute('aria-pressed', A.next.includes(k) ? 'true' : 'false');
+      b.addEventListener('click', () => { A.next = A.next.includes(k) ? A.next.filter(x => x !== k) : SLOT_KEYS.filter(x => x === k || A.next.includes(x)); Sfx.play('ui'); this.render(); });
+      cc.appendChild(b);
+    }
+    const M = this.F.prm.moves[this.slot], ss = sec('초식 성능'), box = el('div', 'meters'); ss.appendChild(box);
+    const rows = M.ac > 0 ? [
+      ['속도', clamp((16 - M.su) / 13, 0.05, 1), M.su + '프레임'],
+      ['위력', clamp(M.maxD / 12, 0.05, 1), M.maxD.toFixed(1)],
+      ['사거리', clamp(M.reach / 130, 0.03, 1), Math.round(Math.max(0, M.reach)) + 'px'],
+      ['높이', clamp((M.yHi - M.yLo + 30) / 190, 0.05, 1), heightLabel(M.yLo) === heightLabel(M.yHi) ? heightLabel(M.yLo) : heightLabel(M.yLo) + '~' + heightLabel(M.yHi)],
+      ['빈틈', clamp(M.rc / 30, 0.05, 1), M.rc + '프레임'],
+    ] : [];
+    for (const [l, v, t] of rows) {
+      const r = el('div', 'meter'); r.appendChild(el('span', null, l));
+      const bar = el('div', 'bar'), i = el('i'); i.style.width = Math.round(v * 100) + '%'; bar.appendChild(i); r.appendChild(bar);
+      r.appendChild(el('span', 'v', t)); box.appendChild(r);
+    }
+    let hint, warn = true;
+    if (M.ac === 0) hint = '휘두르는 속도가 느려서 맞는 구간이 없어요. 더 빠르게 움직여 보세요.';
+    else if (M.yLo >= 150) hint = '서 있는 상대보다 높아요. 점프한 상대만 맞힐 수 있어요.';
+    else if (M.reach < 35) hint = '손발이 몸 가까이에서만 움직여서 바짝 붙어야 맞아요.';
+    else { warn = false; hint = KIND_L[M.mainKind] + ' 초식 · ' + M.nWin + '타' + (M.maxD >= 8 ? ' · 묵직하지만 빗나가면 빈틈이 커요.' : ' · 빠르게 끊어 치는 초식이에요.'); }
+    const h = el('p', 'hint' + (warn ? ' warn' : ''), hint); ss.appendChild(h);
+  },
+  recLimb() { const A = this.d.moves.arts[this.slot]; return this.limbPick || (A ? A.limb : this.slot.slice(-1) === 'k' ? 'lF' : 'aF'); },
+  geom(cv) { const r = cv.getBoundingClientRect(), sc = Math.min(r.height / 250, r.width / 280); return { r, sc, ox: r.width / 2 - 25 * sc, oy: r.height * 0.9 }; },
+  toLocal(cv, e) { const G = this.geom(cv); return [(e.clientX - G.r.left - G.ox) / G.sc, (e.clientY - G.r.top - G.oy) / G.sc]; },
+  handles(J) { return [['aF', J.aF.e], ['aB', J.aB.e], ['lF', J.lF.e], ['lB', J.lB.e], ['head', J.head], ['hip', J.hip]]; },
+  down(cv, e) {
+    if (!this.F) return;
+    this.anim = null;
+    const L = this.toLocal(cv, e);
+    if (this.tab === 'move') {
+      e.preventDefault();
+      try { cv.setPointerCapture(e.pointerId); } catch (err) {}
+      const R = this.rec = makeRecorder(this.d.moves.stance, this.B(), this.recLimb());
+      R.id = e.pointerId; R.start = L; R.origin = R.cur.slice(); R.live = false; this.recT = R.cur.slice();
+      Sfx.init(); Sfx.play('ui');
+      return;
+    }
+    const { sc } = this.geom(cv), B = this.B(), J = solve(this.d.moves[this.poseSlot], B);
+    let best = null, bd = 34 / sc;
+    for (const [k, p] of this.handles(J)) { const dd = Math.hypot(p[0] - L[0], p[1] - L[1]); if (dd < bd) { bd = dd; best = k; } }
+    if (!best) return;
+    e.preventDefault();
+    try { cv.setPointerCapture(e.pointerId); } catch (err) {}
+    this.drag = { k: best, id: e.pointerId, hip: J.hip.slice(), start: L, p0: clonePose(this.d.moves[this.poseSlot]) };
+  },
+  move(cv, e) {
+    if (this.rec && e.pointerId === this.rec.id) {
+      // relative: the hand/foot moves the way the finger moves, wherever the finger started
+      const R = this.rec, L = this.toLocal(cv, e);
+      this.recT = [R.origin[0] + L[0] - R.start[0], R.origin[1] + L[1] - R.start[1]];
+      return;
+    }
+    const dr = this.drag;
+    if (!dr || e.pointerId !== dr.id) return;
+    const L = this.toLocal(cv, e), B = this.B(), p = clonePose(this.d.moves[this.poseSlot]), J = solve(p, B), k = dr.k;
+    if (k === 'aF' || k === 'aB') p[k] = ikLimb(J[k].o, L, B.ua, B.fa, false);
+    else if (k === 'lF' || k === 'lB') p[k] = ikLimb([dr.hip[0] - (k === 'lB' ? 3 : 0), dr.hip[1]], L, B.thigh, B.shin, true);
+    else if (k === 'head') p.lean = Math.atan2(L[0] - J.hip[0], -(L[1] - J.hip[1])) / D2R;
+    else { p.drop = dr.p0.drop + (L[1] - dr.start[1]); p.dx = dr.p0.dx + (L[0] - dr.start[0]); }
+    this.d.moves[this.poseSlot] = cleanPose(p, p);
+    this.rebuild();
+  },
+  up(e) {
+    if (this.rec && e.pointerId === this.rec.id) { this.finishRec(); return; }
+    if (this.drag && e.pointerId === this.drag.id) { this.drag = null; if (this.poseSlot === 'stance') this.restance(); this.render(); }
+  },
+  // moves were recorded against the stance: re-root them on the new stance
+  restance() {
+    const arts = this.d.moves.arts;
+    for (const k of SLOT_KEYS) if (arts[k]) arts[k] = cleanArt(arts[k], arts[k], this.d.moves.stance, this.B());
+  },
+  finishRec() {
+    const R = this.rec;
+    this.rec = null;
+    if (!R || R.fr.length < 3) { this.render(); return; }
+    const old = this.d.moves.arts[this.slot];
+    this.d.moves.arts[this.slot] = { name: old ? old.name : (this.slot === 'p' || this.slot === 'k' ? MOVE_NAMES[this.d.style][this.slot === 'p' ? 0 : 1] : ART_NAMES[this.slot]), limb: R.limb, fr: R.fr, next: old ? old.next : [] };
+    this.render();
+    this.play(false);
+  },
+  play(slow) { const M = this.F.prm.moves[this.slot]; if (this.tab !== 'move' || !M) return; this.drag = null; this.anim = { t: 0, slow, M, hitShown: -1 }; Sfx.init(); },
+  tick() {
+    if (!this.F) return;
+    this.F.t++;
+    const R = this.rec;
+    if (R && this.recT) {
+      // the clock starts when the finger starts moving, so a pause before the swing costs nothing
+      if (!R.live && Math.hypot(this.recT[0] - R.origin[0], this.recT[1] - R.origin[1]) > 6) R.live = true;
+      if (R.live && !R.step(this.recT)) this.finishRec();
+    }
+    const A = this.anim;
+    if (A) {
+      const prev = Math.floor(A.t);
+      A.t += A.slow ? 0.3 : 1;
+      const i = Math.floor(A.t);
+      if (i !== prev && A.M.hitF[i] && A.M.hitF[i].w !== A.hitShown) { A.hitShown = A.M.hitF[i].w; Sfx.play(A.M.hitF[i].m.heavy ? 'hhit' : 'hit'); }
+      if (A.t > A.M.poses.length + 24) this.anim = null;
+    }
+  },
+  ends(M, limb) {
+    if (this.trail && this.trail.M === M) return this.trail.ends;
+    const B = this.B(), ends = M.poses.map(p => solve(p, B)[limb].e);
+    this.trail = { M, ends };
+    return ends;
+  },
+  draw(cv) {
+    if (!this.F || this.tab === 'art' || this.tab === 'book') return;
+    const G = this.geom(cv);
+    if (!G.r.width) return;
+    const dpr = Math.min(2, window.devicePixelRatio || 1), w = Math.round(G.r.width * dpr), h = Math.round(G.r.height * dpr);
+    if (cv.width !== w || cv.height !== h) { cv.width = w; cv.height = h; }
+    const g = cv.getContext('2d'), sc = G.sc;
+    g.setTransform(1, 0, 0, 1, 0, 0); g.clearRect(0, 0, w, h);
+    g.setTransform(dpr * sc, 0, 0, dpr * sc, dpr * G.ox, dpr * G.oy);
+    g.lineCap = 'round'; g.lineJoin = 'round';
+    g.fillStyle = 'rgba(255,255,255,.06)'; g.fillRect(-400, 0, 900, 30);
+    g.strokeStyle = 'rgba(255,255,255,.25)'; g.lineWidth = 2; g.beginPath(); g.moveTo(-400, 0); g.lineTo(500, 0); g.stroke();
+    const dx0 = LAB_DUMMY - 27;
+    g.fillStyle = 'rgba(75,185,255,.10)'; g.fillRect(dx0, -150, 54, 150);
+    g.setLineDash([6, 5]); g.strokeStyle = 'rgba(75,185,255,.6)'; g.lineWidth = 2; g.strokeRect(dx0, -150, 54, 150); g.setLineDash([]);
+    g.fillStyle = 'rgba(75,185,255,.9)'; g.font = '700 12px ' + FONT_B; g.textAlign = 'center'; g.textBaseline = 'bottom'; g.fillText('상대', LAB_DUMMY, -6);
+    this.F.rx = 0; this.F.ry = GY; this.F.st = 'idle'; this.F.inv = 0;
+    const B = this.B();
+    let status = '';
+    if (this.tab === 'pose') {
+      const pose = this.d.moves[this.poseSlot];
+      drawFighter(g, this.F, { pose });
+      const J = solve(pose, B);
+      for (const [k, p] of this.handles(J)) {
+        const active = this.drag && this.drag.k === k, front = k === 'aF' || k === 'lF', mid = k === 'head' || k === 'hip', r = (active ? 13 : 10) / sc;
+        g.beginPath(); g.arc(p[0], p[1], r, 0, Math.PI * 2);
+        g.fillStyle = mid ? 'rgba(75,185,255,.85)' : front ? 'rgba(255,200,58,.9)' : 'rgba(246,242,255,.4)';
+        g.fill(); g.lineWidth = 2.5 / sc; g.strokeStyle = INK; g.stroke();
+      }
+    } else if (this.rec) {
+      const R = this.rec;
+      g.strokeStyle = 'rgba(255,200,58,.9)'; g.lineWidth = 4 / sc; g.beginPath();
+      R.path.forEach((q, i) => (i ? g.lineTo(q[0], q[1]) : g.moveTo(q[0], q[1]))); g.stroke();
+      if (this.recT) { g.beginPath(); g.arc(this.recT[0], this.recT[1], 12 / sc, 0, Math.PI * 2); g.strokeStyle = '#ff5a6e'; g.lineWidth = 3 / sc; g.stroke(); }
+      drawFighter(g, this.F, { pose: R.pose });
+      status = R.live ? '녹화 중 ' + (R.t / 60).toFixed(1) + ' / ' + (REC_MAX / 60).toFixed(1) + '초' : '손가락을 움직이면 녹화가 시작돼요';
+    } else {
+      const M = this.F.prm.moves[this.slot];
+      if (!M) { drawFighter(g, this.F, { pose: this.d.moves.stance }); status = '빈칸 · 화면을 눌러 녹화하세요'; }
+      else {
+        const ends = this.ends(M, M.limb);
+        g.strokeStyle = 'rgba(246,242,255,.35)'; g.lineWidth = 2.5 / sc; g.setLineDash([4 / sc, 5 / sc]); g.beginPath();
+        ends.forEach((q, i) => (i ? g.lineTo(q[0], q[1]) : g.moveTo(q[0], q[1]))); g.stroke(); g.setLineDash([]);
+        let best = -1;
+        M.hitF.forEach((hf, i) => {
+          if (!hf) return;
+          const q = ends[i];
+          g.beginPath(); g.arc(q[0], q[1], (4 + hf.m.dmg * 0.9) / sc * Math.min(sc, 1.6), 0, Math.PI * 2);
+          g.fillStyle = KIND_C[hf.m.kind]; g.globalAlpha = 0.75; g.fill(); g.globalAlpha = 1;
+          if (best < 0 || ends[i][0] > ends[best][0]) best = i;
+        });
+        if (this.anim) {
+          const i = Math.min(Math.floor(this.anim.t), M.poses.length - 1);
+          drawFighter(g, this.F, { pose: M.poses[i] });
+          const hf = M.hitF[i];
+          if (hf) { const q = ends[i]; g.beginPath(); g.arc(q[0], q[1], 22, 0, Math.PI * 2); g.strokeStyle = KIND_C[hf.m.kind]; g.lineWidth = 4; g.stroke(); }
+          status = (this.anim.slow ? '느리게 재생 ' : '재생 ') + (i / 60).toFixed(2) + '초';
+        } else {
+          if (best >= 0) { g.save(); g.globalAlpha = 0.3; drawFighter(g, this.F, { pose: M.poses[best] }); g.restore(); }
+          drawFighter(g, this.F, { pose: this.d.moves.stance });
+          const hits = M.hitF.some(hf => hf && hf.box[1] > LAB_DUMMY - 27 && hf.box[0] < LAB_DUMMY + 27 && hf.box[3] > 0 && hf.box[2] < 150);
+          status = M.ac === 0 ? '맞는 구간이 없어요' : hits ? '연습 상대에게 맞아요' : '연습 상대에게 안 닿아요';
+        }
+      }
+    }
+    if (status) {
+      g.setTransform(dpr, 0, 0, dpr, 0, 0);
+      g.font = '700 13px ' + FONT_B; g.textAlign = 'left'; g.textBaseline = 'top';
+      g.lineWidth = 4; g.strokeStyle = INK; g.strokeText(status, 12, 12);
+      g.fillStyle = this.rec ? '#ff5a6e' : '#f6f2ff'; g.fillText(status, 12, 12);
+      if (this.tab === 'move' && !this.rec) {
+        let x = 12; const y = 34;
+        for (const k of ['push', 'up', 'down']) {
+          g.fillStyle = KIND_C[k]; g.beginPath(); g.arc(x + 5, y + 7, 5, 0, Math.PI * 2); g.fill();
+          g.fillStyle = '#b0a8de'; g.font = '600 12px ' + FONT_B; g.fillText(KIND_L[k], x + 14, y); x += 76;
+        }
+      }
+    }
+  },
+  mirror() { const p = clonePose(this.d.moves[this.poseSlot]); [p.aF, p.aB] = [p.aB, p.aF]; [p.lF, p.lB] = [p.lB, p.lF]; this.d.moves[this.poseSlot] = p; if (this.poseSlot === 'stance') this.restance(); this.render(); },
+  // seal pad
+  sealDown(cv, e) { e.preventDefault(); try { cv.setPointerCapture(e.pointerId); } catch (err) {} this.sealDraw = { id: e.pointerId, st: [this.sealPt(cv, e)] }; this.seal.push(this.sealDraw.st); },
+  sealMove(cv, e) {
+    const S = this.sealDraw; if (!S || S.id !== e.pointerId) return;
+    const q = this.sealPt(cv, e), l = S.st[S.st.length - 1];
+    if (Math.hypot(q[0] - l[0], q[1] - l[1]) >= 2.2) S.st.push(q);
+  },
+  sealUp(e) { if (this.sealDraw && this.sealDraw.id === e.pointerId) { this.sealDraw = null; this.d.seal = sealEncode(this.seal); this.seal = sealDecode(this.d.seal); } },
+  sealPt(cv, e) { const r = cv.getBoundingClientRect(); return [clamp(Math.round((e.clientX - r.left) / r.width * 80 - 8), 0, 63), clamp(Math.round((e.clientY - r.top) / r.height * 80 - 8), 0, 63)]; },
+  drawSealPad(cv) {
+    const r = cv.getBoundingClientRect(); if (!r.width) return;
+    const dpr = Math.min(2, window.devicePixelRatio || 1), w = Math.round(r.width * dpr);
+    if (cv.width !== w) { cv.width = w; cv.height = w; }
+    const g = cv.getContext('2d');
+    g.setTransform(1, 0, 0, 1, 0, 0); g.clearRect(0, 0, w, w);
+    const tmp = Object.assign({}, this.d, { seal: sealEncode(this.seal || []) });
+    drawSeal(g, tmp, w / 2, w / 2, w * 0.86);
+  },
+  save() { this.d.seal = sealEncode(this.seal || []); Creator.save(); this.F = mkFighter(this.d, 0); this.seal = sealDecode(this.d.seal); this.render(); },
 };
 
 /* ---------- CPU setup ---------- */
@@ -2006,10 +2706,11 @@ function loop(ts) {
     renderGame();
   } else {
     acc = 0; accP += dt; let n = 0;
-    while (accP >= STEP && n < 4) { Demo.step(); accP -= STEP; n++; }
+    while (accP >= STEP && n < 4) { Demo.step(); if (App.screen === 'moves') Lab.tick(); accP -= STEP; n++; }
     if (n >= 4) accP = 0;
     if (App.screen === 'title') Demo.draw($('#cv-hero'));
     else if (App.screen === 'creator') Demo.draw($('#cv-preview'));
+    else if (App.screen === 'moves') { if (Lab.tab === 'art') Lab.drawSealPad($('#cv-seal')); else Lab.draw($('#cv-lab')); }
   }
 }
 
@@ -2364,6 +3065,27 @@ $('#cr-random').addEventListener('click', () => {
   $('#cr-name').value = d.name; Creator.change(); Sfx.play('ui');
 });
 $('#cr-delete').addEventListener('click', () => Creator.del());
+$('#cr-art').addEventListener('input', e => { Creator.draft.art = e.target.value.slice(0, 10); });
+$('#cr-lab').addEventListener('click', () => { Sfx.init(); Sfx.play('ui'); Lab.open(); });
+$('#ml-back').addEventListener('click', () => { Sfx.play('ui'); Demo.set(Creator.draft); Creator.render(); show('creator'); });
+$('#ml-save').addEventListener('click', () => { Lab.save(); Sfx.play('ui'); });
+$('#ml-art').addEventListener('input', e => { Creator.draft.art = e.target.value.slice(0, 10); });
+$('#ml-motto').addEventListener('input', e => { Creator.draft.motto = e.target.value.slice(0, 24); });
+$('#seal-clear').addEventListener('click', () => { Lab.seal = []; Creator.draft.seal = ''; Sfx.play('ui'); });
+{
+  const cv = $('#cv-lab');
+  cv.addEventListener('pointerdown', e => Lab.down(cv, e));
+  cv.addEventListener('pointermove', e => Lab.move(cv, e));
+  cv.addEventListener('pointerup', e => Lab.up(e));
+  cv.addEventListener('pointercancel', e => Lab.up(e));
+  cv.addEventListener('touchstart', e => { if (Lab.drag || Lab.rec || Lab.tab === 'move') e.preventDefault(); }, { passive: false });
+  const sp = $('#cv-seal');
+  sp.addEventListener('pointerdown', e => Lab.sealDown(sp, e));
+  sp.addEventListener('pointermove', e => Lab.sealMove(sp, e));
+  sp.addEventListener('pointerup', e => Lab.sealUp(e));
+  sp.addEventListener('pointercancel', e => Lab.sealUp(e));
+  sp.addEventListener('touchstart', e => e.preventDefault(), { passive: false });
+}
 $$('[data-demo]').forEach(b => b.addEventListener('click', () => { Sfx.init(); Demo.act(b.dataset.demo); }));
 
 $('#cpu-start').addEventListener('click', () => { Sfx.init(); CpuSetup.start(); });
@@ -2411,7 +3133,7 @@ show('title');
 detectNet();
 requestAnimationFrame(loop);
 // test hook (harmless in normal play)
-window.__mf = { App, Online, V, roster: () => roster, encodeSnap, applySnap, step, newGame, Cpu, sanitizeFighter, randomFighter, STYLE_KEYS };
+window.__mf = { App, Online, V, Lab, Creator, roster: () => roster, encodeSnap, applySnap, step, newGame, Cpu, sanitizeFighter, randomFighter, buildParams, artProfile, dimsOf, STYLE_KEYS, SLOT_KEYS };
 })();
 </script>
 </body>
